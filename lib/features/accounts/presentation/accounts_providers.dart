@@ -6,11 +6,11 @@ import '../domain/account_entity.dart';
 part 'accounts_providers.g.dart';
 
 @riverpod
-AccountsRepository accountsRepository(AccountsRepositoryRef ref) {
+AccountsRepository accountsRepository(Ref ref) {
   return getIt<AccountsRepository>();
 }
 
 @riverpod
-Stream<List<AccountEntity>> watchAccounts(WatchAccountsRef ref) {
+Stream<List<AccountEntity>> watchAccounts(Ref ref) {
   return ref.watch(accountsRepositoryProvider).watchAccountsWithBalance();
 }

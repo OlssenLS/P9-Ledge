@@ -55,7 +55,7 @@ final class CategoriesRepositoryProvider
 }
 
 String _$categoriesRepositoryHash() =>
-    r'1f123ea4c8d6134d194b7d761165ef9f5d164131';
+    r'aca8a79a8adf0985ca7775bf39cf8b2e4a103526';
 
 @ProviderFor(watchCategories)
 final watchCategoriesProvider = WatchCategoriesProvider._();
@@ -96,4 +96,4 @@ final class WatchCategoriesProvider
   }
 }
 
-String _$watchCategoriesHash() => r'fbee8beb31b17e333bb09bcbf5ef4ac07330279c';
+String _$watchCategoriesHash() => r'7e540a800376a5d6414cca162ce8352654f168ae';

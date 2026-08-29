@@ -55,7 +55,7 @@ final class AccountsRepositoryProvider
 }
 
 String _$accountsRepositoryHash() =>
-    r'052a60e9d28b45f2388ed2cfb5849240f9a2649d';
+    r'37c8ded7bf6577be7a498f3f0f70ecb27738a0de';
 
 @ProviderFor(watchAccounts)
 final watchAccountsProvider = WatchAccountsProvider._();
@@ -96,4 +96,4 @@ final class WatchAccountsProvider
   }
 }
 
-String _$watchAccountsHash() => r'53188dd8805e207cba8862945553202b60af70fd';
+String _$watchAccountsHash() => r'd596ca7dafd9a0c8e692006140672eccaf187442';

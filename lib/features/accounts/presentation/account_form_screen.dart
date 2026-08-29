@@ -96,7 +96,7 @@ class _AccountFormScreenState extends ConsumerState<AccountFormScreen> {
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<AccountType>(
-              value: _selectedType,
+              initialValue: _selectedType,
               decoration: const InputDecoration(labelText: 'Type'),
               items: AccountType.values.map((t) {
                 return DropdownMenuItem(value: t, child: Text(t.name.toUpperCase()));

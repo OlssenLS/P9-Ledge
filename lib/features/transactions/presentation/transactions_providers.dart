@@ -6,7 +6,7 @@ import '../domain/transaction_entity.dart';
 part 'transactions_providers.g.dart';
 
 @riverpod
-TransactionsRepository transactionsRepository(TransactionsRepositoryRef ref) {
+TransactionsRepository transactionsRepository(Ref ref) {
   return getIt<TransactionsRepository>();
 }
 
@@ -19,7 +19,7 @@ class SearchQuery extends _$SearchQuery {
 }
 
 @riverpod
-Stream<List<TransactionEntity>> watchTransactions(WatchTransactionsRef ref) {
+Stream<List<TransactionEntity>> watchTransactions(Ref ref) {
   final query = ref.watch(searchQueryProvider).toLowerCase();
   final stream = ref.watch(transactionsRepositoryProvider).watchTransactions();
   

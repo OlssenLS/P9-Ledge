@@ -158,7 +158,7 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
                   _selectedCategoryId = null;
                 }
                 return DropdownButtonFormField<int>(
-                  value: _selectedCategoryId,
+                  initialValue: _selectedCategoryId,
                   decoration: const InputDecoration(labelText: 'Category'),
                   items: categories.map((c) {
                     return DropdownMenuItem(value: c.id, child: Text(c.name));
@@ -177,7 +177,7 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
                   _selectedAccountId = null;
                 }
                 return DropdownButtonFormField<int>(
-                  value: _selectedAccountId,
+                  initialValue: _selectedAccountId,
                   decoration: const InputDecoration(labelText: 'Account'),
                   items: accounts.map((a) {
                     return DropdownMenuItem(value: a.id, child: Text(a.name));

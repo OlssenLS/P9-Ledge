@@ -6,11 +6,11 @@ import '../domain/category_entity.dart';
 part 'categories_providers.g.dart';
 
 @riverpod
-CategoriesRepository categoriesRepository(CategoriesRepositoryRef ref) {
+CategoriesRepository categoriesRepository(Ref ref) {
   return getIt<CategoriesRepository>();
 }
 
 @riverpod
-Stream<List<CategoryEntity>> watchCategories(WatchCategoriesRef ref) {
+Stream<List<CategoryEntity>> watchCategories(Ref ref) {
   return ref.watch(categoriesRepositoryProvider).watchCategories();
 }

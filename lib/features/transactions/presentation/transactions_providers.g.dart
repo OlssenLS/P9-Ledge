@@ -55,7 +55,7 @@ final class TransactionsRepositoryProvider
 }
 
 String _$transactionsRepositoryHash() =>
-    r'84fd71c9515c46c994ab73ea4a17bafba5294b4e';
+    r'7768154de932b3d7a95a997a2fb30dc6459c0f93';
 
 @ProviderFor(SearchQuery)
 final searchQueryProvider = SearchQueryProvider._();
@@ -147,4 +147,4 @@ final class WatchTransactionsProvider
   }
 }
 
-String _$watchTransactionsHash() => r'93f238b38bb1a507139b6171de6421d183fc929f';
+String _$watchTransactionsHash() => r'd11e49d81532f596a8a1adccd545326fff8d4162';
