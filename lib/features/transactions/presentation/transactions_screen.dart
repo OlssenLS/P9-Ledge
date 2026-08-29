@@ -163,6 +163,37 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                 centerTitle: false,
                 floating: true,
                 pinned: true,
+                actions: [
+                  Center(
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: Spacing.md),
+                      child: InkWell(
+                        onTap: () => _showAccountPicker(allAccounts),
+                        borderRadius: BorderRadius.circular(100),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: Colors.white10,
+                            borderRadius: BorderRadius.circular(100),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.work_outline, size: 14, color: Colors.white60),
+                              const SizedBox(width: 6),
+                              Text(
+                                _selectedAccountId == null ? 'ALL' : accountName.toUpperCase(),
+                                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white),
+                              ),
+                              const SizedBox(width: 4),
+                              const Icon(Icons.keyboard_arrow_down, size: 16, color: Colors.white60),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
               
               // Section 1: Total Balance
@@ -171,18 +202,11 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                   padding: const EdgeInsets.symmetric(vertical: Spacing.xl, horizontal: Spacing.md),
                   child: Column(
                     children: [
-                      GestureDetector(
-                        onTap: () => _showAccountPicker(allAccounts),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(accountName, style: theme.textTheme.titleSmall?.copyWith(color: Colors.white70)),
-                            const SizedBox(width: 4),
-                            const Icon(Icons.keyboard_arrow_down, size: 16, color: Colors.white70),
-                          ],
-                        ),
+                      Text(
+                        'Total Balance',
+                        style: theme.textTheme.labelSmall?.copyWith(letterSpacing: 1.5, color: Colors.white38),
                       ),
-                      const SizedBox(height: Spacing.sm),
+                      const SizedBox(height: Spacing.xs),
                       Text(
                         CurrencyFormatter.format(totalBalance),
                         style: theme.textTheme.displayMedium?.copyWith(fontWeight: FontWeight.bold, color: Colors.white),
