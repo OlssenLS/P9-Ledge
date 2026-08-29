@@ -28,7 +28,13 @@ class ReceiptScannerService {
   }
 
   Future<ParsedReceipt?> scanReceipt(File imageFile, String apiKey) async {
-    final modelNames = ['gemini-1.5-flash', 'gemini-1.5-flash-latest', 'gemini-1.5-pro', 'gemini-1.5-pro-latest', 'gemini-pro-vision'];
+    final modelNames = [
+      'gemini-2.5-flash', 
+      'gemini-2.5-pro', 
+      'gemini-1.5-flash', 
+      'gemini-1.5-pro',
+      'gemini-pro-latest'
+    ];
     final bytes = await imageFile.readAsBytes();
     final prompt = TextPart('''
 You are an AI receipt scanner for an Indonesian user.
