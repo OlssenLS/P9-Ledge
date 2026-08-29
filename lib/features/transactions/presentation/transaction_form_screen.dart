@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../domain/transaction_entity.dart';
+import '../../../core/utils/icon_map.dart';
 import 'transactions_providers.dart';
 import '../../categories/presentation/categories_providers.dart';
 import '../../accounts/presentation/accounts_providers.dart';
@@ -133,6 +134,26 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
         child: ListView(
           padding: const EdgeInsets.all(16.0),
           children: [
+            if (widget.transaction != null)
+              Center(
+                child: Hero(
+                  tag: 'transaction-icon-${widget.transaction!.id}',
+                  child: CircleAvatar(
+                    radius: 32,
+                    backgroundColor: widget.transaction!.category != null 
+                        ? Color(widget.transaction!.category!.color) 
+                        : Colors.grey,
+                    child: Icon(
+                      widget.transaction!.category != null 
+                          ? IconMap.getIcon(widget.transaction!.category!.icon) 
+                          : Icons.category,
+                      color: Colors.white,
+                      size: 32,
+                    ),
+                  ),
+                ),
+              ),
+            if (widget.transaction != null) const SizedBox(height: 24),
             SegmentedButton<TransactionType>(
               segments: const [
                 ButtonSegment(value: TransactionType.expense, label: Text('Expense')),

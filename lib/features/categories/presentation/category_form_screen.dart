@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../domain/category_entity.dart';
 import 'categories_providers.dart';
 import '../../../core/utils/icon_map.dart';
@@ -122,12 +123,12 @@ class _CategoryFormScreenState extends ConsumerState<CategoryFormScreen> {
                 return InkWell(
                   onTap: () => setState(() => _selectedIcon = iconName),
                   child: CircleAvatar(
-                    backgroundColor: isSelected ? Theme.of(context).primaryColor : Colors.grey[200],
+                    backgroundColor: isSelected ? Theme.of(context).colorScheme.primary : const Color(0xFF1E1E1E),
                     child: Icon(
                       IconMap.getIcon(iconName),
-                      color: isSelected ? Colors.white : Colors.black54,
+                      color: isSelected ? Colors.black : Colors.white54,
                     ),
-                  ),
+                  ).animate(target: isSelected ? 1 : 0).scale(begin: const Offset(1, 1), end: const Offset(1.2, 1.2), duration: 200.ms),
                 );
               }).toList(),
             ),
@@ -147,9 +148,9 @@ class _CategoryFormScreenState extends ConsumerState<CategoryFormScreen> {
                     decoration: BoxDecoration(
                       color: Color(colorValue),
                       shape: BoxShape.circle,
-                      border: isSelected ? Border.all(color: Colors.black, width: 3) : null,
+                      border: isSelected ? Border.all(color: Colors.white, width: 3) : null,
                     ),
-                  ),
+                  ).animate(target: isSelected ? 1 : 0).scale(begin: const Offset(1, 1), end: const Offset(1.2, 1.2), duration: 200.ms),
                 );
               }).toList(),
             ),

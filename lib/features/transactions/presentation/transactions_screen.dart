@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:intl/intl.dart';
 import 'transactions_providers.dart';
 import 'transaction_form_screen.dart';
@@ -74,11 +75,15 @@ class TransactionsScreen extends ConsumerWidget {
                           DateFormat.yMMMd().format(date),
                           style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
-                        Text(
-                          CurrencyFormatter.format(dailyTotal),
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: dailyTotal >= 0 ? Colors.green : Colors.red,
+                        AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 300),
+                          child: Text(
+                            CurrencyFormatter.format(dailyTotal),
+                            key: ValueKey(dailyTotal),
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: dailyTotal >= 0 ? Colors.green : Colors.red,
+                            ),
                           ),
                         ),
                       ],
@@ -87,11 +92,14 @@ class TransactionsScreen extends ConsumerWidget {
                   ...dailyTransactions.map((t) {
                     final isIncome = t.type == TransactionType.income;
                     return ListTile(
-                      leading: CircleAvatar(
-                        backgroundColor: t.category != null ? Color(t.category!.color) : Colors.grey,
-                        child: Icon(
-                          t.category != null ? IconMap.getIcon(t.category!.icon) : Icons.category,
-                          color: Colors.white,
+                      leading: Hero(
+                        tag: 'transaction-icon-${t.id}',
+                        child: CircleAvatar(
+                          backgroundColor: t.category != null ? Color(t.category!.color) : Colors.grey,
+                          child: Icon(
+                            t.category != null ? IconMap.getIcon(t.category!.icon) : Icons.category,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                       title: Text(t.category?.name ?? 'Unknown Category'),
@@ -108,7 +116,7 @@ class TransactionsScreen extends ConsumerWidget {
                           builder: (context) => TransactionFormScreen(transaction: t),
                         ));
                       },
-                    );
+                    ).animate().fadeIn(duration: 300.ms).slideX(begin: 0.1, end: 0);
                   }),
                 ],
               );

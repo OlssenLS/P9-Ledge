@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'categories_providers.dart';
 import '../../../core/utils/icon_map.dart';
 import 'category_form_screen.dart';
@@ -33,7 +34,7 @@ class CategoriesScreen extends ConsumerWidget {
                     builder: (context) => CategoryFormScreen(category: cat),
                   ));
                 },
-              );
+              ).animate().fadeIn(duration: 300.ms).slideX(begin: 0.1, end: 0);
             },
           );
         },
