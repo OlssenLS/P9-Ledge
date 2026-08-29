@@ -29,11 +29,8 @@ class ReceiptScannerService {
 
   Future<ParsedReceipt?> scanReceipt(File imageFile, String apiKey) async {
     final model = GenerativeModel(
-      model: 'gemini-1.5-flash-latest',
+      model: 'gemini-1.5-flash',
       apiKey: apiKey,
-      generationConfig: GenerationConfig(
-        responseMimeType: 'application/json',
-      ),
     );
 
     final bytes = await imageFile.readAsBytes();
