@@ -13,6 +13,8 @@ import '../../../core/utils/currency_formatter.dart';
 import '../../../core/utils/icon_map.dart';
 import '../../accounts/domain/account_entity.dart';
 import '../../accounts/presentation/accounts_providers.dart';
+import '../../categories/presentation/categories_providers.dart';
+import '../../categories/presentation/category_form_screen.dart';
 import '../domain/transaction_entity.dart';
 import 'transactions_providers.dart';
 import 'transaction_form_screen.dart';
@@ -27,6 +29,7 @@ class TransactionsScreen extends ConsumerStatefulWidget {
 
 class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
   int? _selectedAccountId;
+  int? _selectedCategoryId;
   bool _isScanning = false;
 
   void _showAccountPicker(List<AccountEntity> accounts) {
@@ -135,6 +138,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
     final theme = Theme.of(context);
     final transactionsAsync = ref.watch(watchTransactionsProvider);
     final accountsAsync = ref.watch(watchAccountsProvider);
+    final categoriesAsync = ref.watch(watchCategoriesProvider);
 
     double totalBalance = 0.0;
     String accountName = 'All Accounts';
@@ -160,9 +164,13 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
 
     if (transactionsAsync.hasValue) {
       final allTransactions = transactionsAsync.value!;
-      final transactions = _selectedAccountId == null 
+      var transactions = _selectedAccountId == null 
           ? allTransactions 
           : allTransactions.where((t) => t.accountId == _selectedAccountId).toList();
+          
+      if (_selectedCategoryId != null) {
+        transactions = transactions.where((t) => t.categoryId == _selectedCategoryId).toList();
+      }
       
       for (final t in transactions) {
         if (t.type == TransactionType.expense) {
@@ -343,7 +351,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
               // Search Bar
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: Spacing.md, vertical: Spacing.md),
+                  padding: const EdgeInsets.symmetric(horizontal: Spacing.md, vertical: Spacing.sm),
                   child: TextField(
                     style: const TextStyle(fontSize: 14, color: Colors.white),
                     decoration: InputDecoration(
@@ -375,14 +383,56 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                 ),
               ),
 
+              // Category Filter
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(Spacing.md, Spacing.md, Spacing.md, Spacing.lg),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            children: [
+                              _buildCategoryChip(null, 'All', theme),
+                              if (categoriesAsync.hasValue)
+                                ...categoriesAsync.value!.map((c) => _buildCategoryChip(c.id, c.name, theme)),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: Spacing.sm),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: IconButton(
+                          icon: Icon(Icons.add, color: theme.colorScheme.primary),
+                          onPressed: () {
+                            HapticFeedback.mediumImpact();
+                            Navigator.push(context, MaterialPageRoute(
+                              builder: (context) => const CategoryFormScreen(),
+                            ));
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
               // Section 3: Transactions List
               SliverToBoxAdapter(
                 child: transactionsAsync.when(
                   data: (allTransactions) {
-                    // Filter by selected account
-                    final transactions = _selectedAccountId == null 
+                    var transactions = _selectedAccountId == null 
                         ? allTransactions 
                         : allTransactions.where((t) => t.accountId == _selectedAccountId).toList();
+                        
+                    if (_selectedCategoryId != null) {
+                      transactions = transactions.where((t) => t.categoryId == _selectedCategoryId).toList();
+                    }
 
                     if (transactions.isEmpty) {
                       return SizedBox(
@@ -590,6 +640,38 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
           style: theme.textTheme.labelSmall?.copyWith(letterSpacing: 1.5, color: Colors.white38),
         ),
       ],
+    );
+  }
+
+  Widget _buildCategoryChip(int? id, String label, ThemeData theme) {
+    final isSelected = _selectedCategoryId == id;
+    return Padding(
+      padding: const EdgeInsets.only(right: Spacing.sm),
+      child: InkWell(
+        onTap: () {
+          HapticFeedback.selectionClick();
+          setState(() => _selectedCategoryId = id);
+        },
+        borderRadius: BorderRadius.circular(100),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: BoxDecoration(
+            color: isSelected ? theme.colorScheme.primary.withValues(alpha: 0.1) : Colors.white.withValues(alpha: 0.05),
+            border: Border.all(
+              color: isSelected ? theme.colorScheme.primary.withValues(alpha: 0.3) : Colors.transparent,
+            ),
+            borderRadius: BorderRadius.circular(100),
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+              color: isSelected ? theme.colorScheme.primary : Colors.white70,
+            ),
+          ),
+        ),
+      ),
     );
   }
 
