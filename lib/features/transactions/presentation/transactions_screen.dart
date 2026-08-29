@@ -153,6 +153,31 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
       }
     }
 
+    double totalSpent = 0.0;
+    double totalIncomeAmount = 0.0;
+    int expenseCount = 0;
+    int incomeCount = 0;
+
+    if (transactionsAsync.hasValue) {
+      final allTransactions = transactionsAsync.value!;
+      final transactions = _selectedAccountId == null 
+          ? allTransactions 
+          : allTransactions.where((t) => t.accountId == _selectedAccountId).toList();
+      
+      for (final t in transactions) {
+        if (t.type == TransactionType.expense) {
+          totalSpent += t.amount;
+          expenseCount++;
+        } else {
+          totalIncomeAmount += t.amount;
+          incomeCount++;
+        }
+      }
+    }
+
+    final avgSpend = expenseCount > 0 ? totalSpent / expenseCount : 0.0;
+    final avgIncome = incomeCount > 0 ? totalIncomeAmount / incomeCount : 0.0;
+
     return Stack(
       children: [
         Scaffold(
@@ -196,21 +221,31 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                 ],
               ),
               
-              // Section 1: Total Balance
+              // Section 1: Total Balance and Stats
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(vertical: Spacing.xl, horizontal: Spacing.md),
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Total Balance',
+                        'TOTAL BALANCE',
                         style: theme.textTheme.labelSmall?.copyWith(letterSpacing: 1.5, color: Colors.white38),
                       ),
                       const SizedBox(height: Spacing.xs),
                       Text(
                         CurrencyFormatter.format(totalBalance),
                         style: theme.textTheme.displayMedium?.copyWith(fontWeight: FontWeight.bold, color: Colors.white),
-                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: Spacing.xl),
+                      Row(
+                        children: [
+                          Expanded(child: _buildMiniStat(theme, 'Total Spent', totalSpent, theme.colorScheme.error)),
+                          const SizedBox(width: Spacing.sm),
+                          Expanded(child: _buildMiniStat(theme, 'Avg Spend', avgSpend, theme.colorScheme.error)),
+                          const SizedBox(width: Spacing.sm),
+                          Expanded(child: _buildMiniStat(theme, 'Avg Income', avgIncome, theme.colorScheme.primary)),
+                        ],
                       ),
                     ],
                   ),
@@ -498,6 +533,24 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
         ),
       ),
     ).animate().fadeIn(duration: 300.ms).slideX(begin: 0.05, end: 0);
+  }
+
+  Widget _buildMiniStat(ThemeData theme, String label, double amount, Color color) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: theme.textTheme.labelSmall?.copyWith(color: Colors.white60), maxLines: 1, overflow: TextOverflow.ellipsis),
+        const SizedBox(height: 4),
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: Alignment.centerLeft,
+          child: Text(
+            CurrencyFormatter.format(amount),
+            style: theme.textTheme.titleSmall?.copyWith(color: color, fontWeight: FontWeight.bold),
+          ),
+        ),
+      ],
+    );
   }
 
   Widget _buildSkeletonLoader() {
