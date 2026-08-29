@@ -10,8 +10,17 @@ import '../../../core/domain/enums.dart';
 
 class TransactionFormScreen extends ConsumerStatefulWidget {
   final TransactionEntity? transaction;
+  final double? initialAmount;
+  final String? initialNote;
+  final DateTime? initialDate;
 
-  const TransactionFormScreen({super.key, this.transaction});
+  const TransactionFormScreen({
+    super.key, 
+    this.transaction,
+    this.initialAmount,
+    this.initialNote,
+    this.initialDate,
+  });
 
   @override
   ConsumerState<TransactionFormScreen> createState() => _TransactionFormScreenState();
@@ -29,14 +38,17 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
   @override
   void initState() {
     super.initState();
+    final amt = widget.transaction?.amount ?? widget.initialAmount;
     _amountController = TextEditingController(
-      text: widget.transaction?.amount.toStringAsFixed(0) ?? '',
+      text: amt != null ? amt.toStringAsFixed(0) : '',
     );
-    _noteController = TextEditingController(text: widget.transaction?.note ?? '');
+    _noteController = TextEditingController(
+      text: widget.transaction?.note ?? widget.initialNote ?? '',
+    );
     _selectedType = widget.transaction?.type ?? TransactionType.expense;
     _selectedCategoryId = widget.transaction?.categoryId;
     _selectedAccountId = widget.transaction?.accountId;
-    _selectedDate = widget.transaction?.date ?? DateTime.now();
+    _selectedDate = widget.transaction?.date ?? widget.initialDate ?? DateTime.now();
   }
 
   @override
