@@ -530,21 +530,22 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
           ),
         ],
       ),
-      bottomSheet: Container(
-        color: theme.colorScheme.surface,
-        padding: Insets.bottomSheet.copyWith(top: Spacing.md),
-        child: FilledButton(
-          onPressed: _save,
-          style: FilledButton.styleFrom(
-            backgroundColor: activeColor,
-            foregroundColor: _selectedType == TransactionType.income ? Colors.black : Colors.white,
-            minimumSize: const Size.fromHeight(56),
-            padding: const EdgeInsets.symmetric(vertical: Spacing.lg),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Radii.md)),
-          ),
-          child: Text(
-            widget.transaction == null ? 'Confirm Transaction' : 'Save Changes',
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(Spacing.md),
+          child: FilledButton(
+            onPressed: _save,
+            style: FilledButton.styleFrom(
+              backgroundColor: activeColor,
+              foregroundColor: _selectedType == TransactionType.income ? Colors.black : Colors.white,
+              minimumSize: const Size.fromHeight(48),
+              padding: const EdgeInsets.symmetric(vertical: Spacing.sm),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Radii.md)),
+            ),
+            child: Text(
+              widget.transaction == null ? 'Confirm Transaction' : 'Save Changes',
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
           ),
         ),
       ),
