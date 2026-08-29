@@ -27,9 +27,6 @@ class TransactionsScreen extends ConsumerWidget {
               decoration: const InputDecoration(
                 hintText: 'Search...',
                 prefixIcon: Icon(Icons.search),
-                border: OutlineInputBorder(),
-                filled: true,
-                fillColor: Colors.white,
               ),
               onChanged: (val) {
                 ref.read(searchQueryProvider.notifier).setQuery(val);
@@ -67,7 +64,7 @@ class TransactionsScreen extends ConsumerWidget {
                 children: [
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    color: Colors.grey[200],
+                    color: Theme.of(context).colorScheme.surface,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
