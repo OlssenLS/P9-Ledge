@@ -419,7 +419,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> with Ti
                         unselectedLabelColor: Colors.white60,
                         labelStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                         unselectedLabelStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.normal),
-                        labelPadding: const EdgeInsets.symmetric(horizontal: Spacing.lg),
+                        labelPadding: const EdgeInsets.symmetric(horizontal: Spacing.md),
                         onTap: (index) {
                           if (index == tabCount - 1) {
                             // Plus button tapped
@@ -436,9 +436,20 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> with Ti
                           });
                         },
                         tabs: [
-                          const Tab(text: 'All'),
-                          ...categories.map((c) => Tab(text: c.name)),
-                          const Tab(icon: Icon(Icons.add, color: Colors.white60, size: 20)),
+                          const Tab(height: 32, text: 'All'),
+                          ...categories.map((c) => Tab(height: 32, text: c.name)),
+                          Tab(
+                            height: 32,
+                            icon: Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.05),
+                                border: Border.all(color: Colors.white12),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(Icons.add, color: Colors.white60, size: 16),
+                            ),
+                          ),
                         ],
                       );
                     },
