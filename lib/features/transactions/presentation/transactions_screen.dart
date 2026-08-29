@@ -27,10 +27,17 @@ class TransactionsScreen extends ConsumerStatefulWidget {
   ConsumerState<TransactionsScreen> createState() => _TransactionsScreenState();
 }
 
-class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
+class _TransactionsScreenState extends ConsumerState<TransactionsScreen> with TickerProviderStateMixin {
   int? _selectedAccountId;
-  int? _selectedCategoryId;
+  int _selectedCategoryIndex = 0;
+  TabController? _tabController;
   bool _isScanning = false;
+
+  @override
+  void dispose() {
+    _tabController?.dispose();
+    super.dispose();
+  }
 
   void _showAccountPicker(List<AccountEntity> accounts) {
     HapticFeedback.selectionClick();
@@ -168,8 +175,12 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
           ? allTransactions 
           : allTransactions.where((t) => t.accountId == _selectedAccountId).toList();
           
-      if (_selectedCategoryId != null) {
-        transactions = transactions.where((t) => t.categoryId == _selectedCategoryId).toList();
+      if (_selectedCategoryIndex > 0 && categoriesAsync.hasValue) {
+        final categories = categoriesAsync.value!;
+        if (_selectedCategoryIndex - 1 < categories.length) {
+          final catId = categories[_selectedCategoryIndex - 1].id;
+          transactions = transactions.where((t) => t.categoryId == catId).toList();
+        }
       }
       
       for (final t in transactions) {
@@ -386,38 +397,51 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
               // Category Filter
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(Spacing.md, Spacing.md, Spacing.md, Spacing.lg),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: Row(
-                            children: [
-                              _buildCategoryChip(null, 'All', theme),
-                              if (categoriesAsync.hasValue)
-                                ...categoriesAsync.value!.map((c) => _buildCategoryChip(c.id, c.name, theme)),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: Spacing.sm),
-                      Container(
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.primary.withValues(alpha: 0.1),
-                          shape: BoxShape.circle,
-                        ),
-                        child: IconButton(
-                          icon: Icon(Icons.add, color: theme.colorScheme.primary),
-                          onPressed: () {
+                  padding: const EdgeInsets.only(top: Spacing.sm, bottom: Spacing.lg),
+                  child: Builder(
+                    builder: (context) {
+                      final categories = categoriesAsync.value ?? [];
+                      final tabCount = categories.length + 2; // 'All' + categories + '+'
+                      
+                      if (_tabController == null || _tabController!.length != tabCount) {
+                        _tabController?.dispose();
+                        _tabController = TabController(length: tabCount, vsync: this, initialIndex: _selectedCategoryIndex);
+                      }
+
+                      return TabBar(
+                        controller: _tabController,
+                        isScrollable: true,
+                        tabAlignment: TabAlignment.start,
+                        dividerColor: Colors.transparent,
+                        indicatorColor: theme.colorScheme.primary,
+                        indicatorWeight: 2,
+                        labelColor: theme.colorScheme.primary,
+                        unselectedLabelColor: Colors.white60,
+                        labelStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                        unselectedLabelStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.normal),
+                        labelPadding: const EdgeInsets.symmetric(horizontal: Spacing.lg),
+                        onTap: (index) {
+                          if (index == tabCount - 1) {
+                            // Plus button tapped
+                            _tabController!.index = _selectedCategoryIndex; // Revert
                             HapticFeedback.mediumImpact();
                             Navigator.push(context, MaterialPageRoute(
                               builder: (context) => const CategoryFormScreen(),
                             ));
-                          },
-                        ),
-                      ),
-                    ],
+                            return;
+                          }
+                          HapticFeedback.selectionClick();
+                          setState(() {
+                            _selectedCategoryIndex = index;
+                          });
+                        },
+                        tabs: [
+                          const Tab(text: 'All'),
+                          ...categories.map((c) => Tab(text: c.name)),
+                          const Tab(icon: Icon(Icons.add, color: Colors.white60, size: 20)),
+                        ],
+                      );
+                    },
                   ),
                 ),
               ),
@@ -430,8 +454,12 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                         ? allTransactions 
                         : allTransactions.where((t) => t.accountId == _selectedAccountId).toList();
                         
-                    if (_selectedCategoryId != null) {
-                      transactions = transactions.where((t) => t.categoryId == _selectedCategoryId).toList();
+                    if (_selectedCategoryIndex > 0 && categoriesAsync.hasValue) {
+                      final categories = categoriesAsync.value!;
+                      if (_selectedCategoryIndex - 1 < categories.length) {
+                        final catId = categories[_selectedCategoryIndex - 1].id;
+                        transactions = transactions.where((t) => t.categoryId == catId).toList();
+                      }
                     }
 
                     if (transactions.isEmpty) {
@@ -640,38 +668,6 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
           style: theme.textTheme.labelSmall?.copyWith(letterSpacing: 1.5, color: Colors.white38),
         ),
       ],
-    );
-  }
-
-  Widget _buildCategoryChip(int? id, String label, ThemeData theme) {
-    final isSelected = _selectedCategoryId == id;
-    return Padding(
-      padding: const EdgeInsets.only(right: Spacing.sm),
-      child: InkWell(
-        onTap: () {
-          HapticFeedback.selectionClick();
-          setState(() => _selectedCategoryId = id);
-        },
-        borderRadius: BorderRadius.circular(100),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          decoration: BoxDecoration(
-            color: isSelected ? theme.colorScheme.primary.withValues(alpha: 0.1) : Colors.white.withValues(alpha: 0.05),
-            border: Border.all(
-              color: isSelected ? theme.colorScheme.primary.withValues(alpha: 0.3) : Colors.transparent,
-            ),
-            borderRadius: BorderRadius.circular(100),
-          ),
-          child: Text(
-            label,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-              color: isSelected ? theme.colorScheme.primary : Colors.white70,
-            ),
-          ),
-        ),
-      ),
     );
   }
 
