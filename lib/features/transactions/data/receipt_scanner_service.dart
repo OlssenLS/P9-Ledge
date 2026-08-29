@@ -92,12 +92,23 @@ Respond ONLY with a JSON object in this exact format, with no markdown formattin
         );
       } catch (e) {
         lastException = Exception('Model $modelName failed: $e');
-        print(lastException);
         continue;
       }
     }
     
-    throw Exception('All fallback models failed. Last error: $lastException');
+    // If we get here, all models failed. Let's fetch the list of available models to help debug.
+    String availableModels = "Could not fetch models.";
+    try {
+      final uri = Uri.parse('https://generativelanguage.googleapis.com/v1beta/models?key=$apiKey');
+      final req = await HttpClient().getUrl(uri);
+      final res = await req.close();
+      final body = await res.transform(utf8.decoder).join();
+      availableModels = body;
+    } catch (e) {
+      availableModels = 'Failed to fetch models: $e';
+    }
+
+    throw Exception('All fallback models failed. Last error: $lastException\n\nAvailable Models for your key:\n$availableModels');
   }
 }
 

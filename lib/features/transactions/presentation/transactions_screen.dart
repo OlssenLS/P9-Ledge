@@ -90,8 +90,20 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
       // Clear the API key if it fails, in case it was a bad key
       await scanner.saveApiKey('');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e\n(API Key cleared, try again)')),
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('AI Scanner Error'),
+            content: SingleChildScrollView(
+              child: Text(e.toString()),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
         );
       }
     } finally {
