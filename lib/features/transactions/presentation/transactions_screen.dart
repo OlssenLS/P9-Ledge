@@ -228,11 +228,8 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'TOTAL BALANCE',
-                        style: theme.textTheme.labelSmall?.copyWith(letterSpacing: 1.5, color: Colors.white38),
-                      ),
-                      const SizedBox(height: Spacing.xs),
+                      _buildSectionHeader(theme, 'Overview'),
+                      const SizedBox(height: Spacing.md),
                       Text(
                         CurrencyFormatter.format(totalBalance),
                         style: theme.textTheme.displayMedium?.copyWith(fontWeight: FontWeight.bold, color: Colors.white),
@@ -253,84 +250,94 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
               ),
 
               // Section Divider
-              const SliverToBoxAdapter(child: Divider(height: 32, color: Colors.white12, thickness: 1)),
+              const SliverToBoxAdapter(child: Divider(height: 16, color: Colors.white10, thickness: 0.5)),
 
               // Section 2: Quick Features
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: Spacing.sm),
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: Spacing.md),
-                    child: Row(
-                      children: [
-                        _buildFeatureBtn(
-                          icon: Icons.document_scanner,
-                          label: 'Scan',
-                          color: theme.colorScheme.primary,
-                          onTap: _handleScanReceipt,
+                  padding: const EdgeInsets.symmetric(vertical: Spacing.md),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: Spacing.md),
+                        child: _buildSectionHeader(theme, 'Quick Actions'),
+                      ),
+                      const SizedBox(height: Spacing.md),
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.symmetric(horizontal: Spacing.md),
+                        child: Row(
+                          children: [
+                            _buildFeatureBtn(
+                              icon: Icons.document_scanner,
+                              label: 'Scan',
+                              color: theme.colorScheme.primary,
+                              onTap: _handleScanReceipt,
+                            ),
+                            const SizedBox(width: Spacing.md),
+                            _buildFeatureBtn(
+                              icon: Icons.mic_none,
+                              label: 'Mic Input',
+                              color: Colors.purple,
+                              onTap: () {
+                                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Mic Input coming soon')));
+                              },
+                            ),
+                            const SizedBox(width: Spacing.md),
+                            _buildFeatureBtn(
+                              icon: Icons.edit,
+                              label: 'Manual',
+                              color: Colors.orange,
+                              onTap: () {
+                                Navigator.push(context, MaterialPageRoute(
+                                  builder: (context) => const TransactionFormScreen(),
+                                ));
+                              },
+                            ),
+                            const SizedBox(width: Spacing.md),
+                            _buildFeatureBtn(
+                              icon: Icons.mail_outline,
+                              label: 'Gmail Sync',
+                              color: Colors.redAccent,
+                              onTap: () {
+                                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Gmail Sync coming soon')));
+                              },
+                            ),
+                            const SizedBox(width: Spacing.md),
+                            _buildFeatureBtn(
+                              icon: Icons.swap_horiz,
+                              label: 'Transfer',
+                              color: Colors.blue,
+                              onTap: () {
+                                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Transfer coming soon')));
+                              },
+                            ),
+                            const SizedBox(width: Spacing.md),
+                            _buildFeatureBtn(
+                              icon: Icons.file_download_outlined,
+                              label: 'Export',
+                              color: Colors.green,
+                              onTap: () {
+                                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Export coming soon')));
+                              },
+                            ),
+                          ],
                         ),
-                        const SizedBox(width: Spacing.md),
-                        _buildFeatureBtn(
-                          icon: Icons.mic_none,
-                          label: 'Mic Input',
-                          color: Colors.purple,
-                          onTap: () {
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Mic Input coming soon')));
-                          },
-                        ),
-                        const SizedBox(width: Spacing.md),
-                        _buildFeatureBtn(
-                          icon: Icons.edit,
-                          label: 'Manual',
-                          color: Colors.orange,
-                          onTap: () {
-                            Navigator.push(context, MaterialPageRoute(
-                              builder: (context) => const TransactionFormScreen(),
-                            ));
-                          },
-                        ),
-                        const SizedBox(width: Spacing.md),
-                        _buildFeatureBtn(
-                          icon: Icons.mail_outline,
-                          label: 'Gmail Sync',
-                          color: Colors.redAccent,
-                          onTap: () {
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Gmail Sync coming soon')));
-                          },
-                        ),
-                        const SizedBox(width: Spacing.md),
-                        _buildFeatureBtn(
-                          icon: Icons.swap_horiz,
-                          label: 'Transfer',
-                          color: Colors.blue,
-                          onTap: () {
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Transfer coming soon')));
-                          },
-                        ),
-                        const SizedBox(width: Spacing.md),
-                        _buildFeatureBtn(
-                          icon: Icons.file_download_outlined,
-                          label: 'Export',
-                          color: Colors.green,
-                          onTap: () {
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Export coming soon')));
-                          },
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
               ),
               
               // Section Divider
-              const SliverToBoxAdapter(child: Divider(height: 32, color: Colors.white12, thickness: 1)),
+              const SliverToBoxAdapter(child: Divider(height: 16, color: Colors.white10, thickness: 0.5)),
               
               // Section 3: Transaction Logs Header
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(Spacing.md, Spacing.xxl, Spacing.md, Spacing.sm),
-                  child: Text('TRANSACTION LOG', style: theme.textTheme.labelSmall?.copyWith(letterSpacing: 1.5, color: Colors.white60)),
+                  padding: const EdgeInsets.fromLTRB(Spacing.md, Spacing.xl, Spacing.md, Spacing.sm),
+                  child: _buildSectionHeader(theme, 'Transaction Log'),
                 ),
               ),
               
@@ -563,6 +570,18 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
         ),
       ),
     ).animate().fadeIn(duration: 300.ms).slideX(begin: 0.05, end: 0);
+  }
+
+  Widget _buildSectionHeader(ThemeData theme, String title) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title.toUpperCase(),
+          style: theme.textTheme.labelSmall?.copyWith(letterSpacing: 1.5, color: Colors.white38),
+        ),
+      ],
+    );
   }
 
   Widget _buildMiniStat(ThemeData theme, String label, double amount, Color color) {
