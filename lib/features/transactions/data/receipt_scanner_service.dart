@@ -55,7 +55,7 @@ Respond ONLY with a JSON object in this exact format, with no markdown formattin
       try {
         final model = GenerativeModel(
           model: modelName,
-          apiKey: apiKey,
+          apiKey: apiKey.trim(),
         );
         
         final response = await model.generateContent([

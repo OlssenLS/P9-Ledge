@@ -87,9 +87,11 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
         );
       }
     } catch (e) {
+      // Clear the API key if it fails, in case it was a bad key
+      await scanner.saveApiKey('');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
+          SnackBar(content: Text('Error: $e\n(API Key cleared, try again)')),
         );
       }
     } finally {
