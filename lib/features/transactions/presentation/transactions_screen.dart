@@ -252,49 +252,79 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                 ),
               ),
 
+              // Section Divider
+              const SliverToBoxAdapter(child: Divider(height: 32, color: Colors.white12, thickness: 1)),
+
               // Section 2: Quick Features
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: Spacing.md, vertical: Spacing.md),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      _buildFeatureBtn(
-                        icon: Icons.document_scanner,
-                        label: 'Scan',
-                        color: theme.colorScheme.primary,
-                        onTap: _handleScanReceipt,
-                      ),
-                      _buildFeatureBtn(
-                        icon: Icons.edit,
-                        label: 'Manual',
-                        color: Colors.orange,
-                        onTap: () {
-                          Navigator.push(context, MaterialPageRoute(
-                            builder: (context) => const TransactionFormScreen(),
-                          ));
-                        },
-                      ),
-                      _buildFeatureBtn(
-                        icon: Icons.swap_horiz,
-                        label: 'Transfer',
-                        color: Colors.blue,
-                        onTap: () {
-                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Transfer coming soon')));
-                        },
-                      ),
-                      _buildFeatureBtn(
-                        icon: Icons.file_download_outlined,
-                        label: 'Export',
-                        color: Colors.green,
-                        onTap: () {
-                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Export coming soon')));
-                        },
-                      ),
-                    ],
+                  padding: const EdgeInsets.symmetric(vertical: Spacing.sm),
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: Spacing.md),
+                    child: Row(
+                      children: [
+                        _buildFeatureBtn(
+                          icon: Icons.document_scanner,
+                          label: 'Scan',
+                          color: theme.colorScheme.primary,
+                          onTap: _handleScanReceipt,
+                        ),
+                        const SizedBox(width: Spacing.md),
+                        _buildFeatureBtn(
+                          icon: Icons.mic_none,
+                          label: 'Mic Input',
+                          color: Colors.purple,
+                          onTap: () {
+                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Mic Input coming soon')));
+                          },
+                        ),
+                        const SizedBox(width: Spacing.md),
+                        _buildFeatureBtn(
+                          icon: Icons.edit,
+                          label: 'Manual',
+                          color: Colors.orange,
+                          onTap: () {
+                            Navigator.push(context, MaterialPageRoute(
+                              builder: (context) => const TransactionFormScreen(),
+                            ));
+                          },
+                        ),
+                        const SizedBox(width: Spacing.md),
+                        _buildFeatureBtn(
+                          icon: Icons.mail_outline,
+                          label: 'Gmail Sync',
+                          color: Colors.redAccent,
+                          onTap: () {
+                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Gmail Sync coming soon')));
+                          },
+                        ),
+                        const SizedBox(width: Spacing.md),
+                        _buildFeatureBtn(
+                          icon: Icons.swap_horiz,
+                          label: 'Transfer',
+                          color: Colors.blue,
+                          onTap: () {
+                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Transfer coming soon')));
+                          },
+                        ),
+                        const SizedBox(width: Spacing.md),
+                        _buildFeatureBtn(
+                          icon: Icons.file_download_outlined,
+                          label: 'Export',
+                          color: Colors.green,
+                          onTap: () {
+                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Export coming soon')));
+                          },
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
+              
+              // Section Divider
+              const SliverToBoxAdapter(child: Divider(height: 32, color: Colors.white12, thickness: 1)),
               
               // Section 3: Transaction Logs Header
               SliverToBoxAdapter(
@@ -449,7 +479,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
         HapticFeedback.lightImpact();
         onTap();
       },
-      borderRadius: BorderRadius.circular(Radii.md),
+      borderRadius: BorderRadius.circular(100),
       child: Padding(
         padding: const EdgeInsets.all(Spacing.sm),
         child: Column(
@@ -459,7 +489,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
               height: 56,
               decoration: BoxDecoration(
                 color: color.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(Radii.md),
+                borderRadius: BorderRadius.circular(100),
                 border: Border.all(color: color.withValues(alpha: 0.2)),
               ),
               child: Icon(icon, color: color, size: 28),
