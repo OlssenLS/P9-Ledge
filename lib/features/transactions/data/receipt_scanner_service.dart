@@ -1,8 +1,6 @@
 import 'dart:io';
-import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_generative_ai/google_generative_ai.dart';
-import '../../../core/providers/shared_prefs_provider.dart';
+import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 
 class ParsedReceipt {
   final double amount;
@@ -17,104 +15,96 @@ class ReceiptScannerService {
 
   ReceiptScannerService(this.ref);
 
-  Future<String?> getApiKey() async {
-    final prefs = ref.read(sharedPreferencesProvider);
-    return prefs.getString('gemini_api_key');
-  }
-
-  Future<void> saveApiKey(String key) async {
-    final prefs = ref.read(sharedPreferencesProvider);
-    await prefs.setString('gemini_api_key', key);
-  }
-
-  Future<ParsedReceipt?> scanReceipt(File imageFile, String apiKey) async {
-    final modelNames = [
-      'gemini-2.5-flash', 
-      'gemini-2.5-pro', 
-      'gemini-1.5-flash', 
-      'gemini-1.5-pro',
-      'gemini-pro-latest'
-    ];
-    final bytes = await imageFile.readAsBytes();
-    final prompt = TextPart('''
-You are an AI receipt scanner for an Indonesian user.
-Analyze the provided image (which could be a physical receipt, a Gojek/Grab e-receipt, or a bank transfer screenshot like BCA/Mandiri) and extract the following:
-1. Total amount (as a number, e.g. 150000). Ignore trailing decimals like ,00.
-2. A short descriptive note for the transaction (e.g. "Groceries at Indomaret" or "Transfer to Budi").
-3. Date of the transaction (in YYYY-MM-DD format). If not visible, use today's date.
-
-Respond ONLY with a JSON object in this exact format, with no markdown formatting or other text:
-{
-  "amount": 150000,
-  "note": "Groceries at Indomaret",
-  "date": "2024-03-21"
-}
-''');
-    
-    final ext = imageFile.path.split('.').last.toLowerCase();
-    final mimeType = (ext == 'png') ? 'image/png' : 'image/jpeg';
-    final imagePart = DataPart(mimeType, bytes);
-    
-    Exception? lastException;
-    
-    for (final modelName in modelNames) {
-      try {
-        final model = GenerativeModel(
-          model: modelName,
-          apiKey: apiKey.trim(),
-        );
-        
-        final response = await model.generateContent([
-          Content.multi([prompt, imagePart])
-        ]);
-        
-        final text = response.text;
-        if (text == null || text.isEmpty) {
-          throw Exception('AI returned empty response.');
-        }
-        
-        String rawText = text.trim();
-        if (rawText.startsWith('```')) {
-          final lines = rawText.split('\n');
-          if (lines.length > 2) {
-            rawText = lines.sublist(1, lines.length - 1).join('\n').trim();
-          }
-        }
-        
-        final Map<String, dynamic> data = jsonDecode(rawText);
-        
-        final rawAmount = data['amount'];
-        double parsedAmount = 0.0;
-        if (rawAmount is num) {
-          parsedAmount = rawAmount.toDouble();
-        } else if (rawAmount is String) {
-          parsedAmount = double.tryParse(rawAmount.replaceAll(RegExp(r'[^0-9.]'), '')) ?? 0.0;
-        }
-        
-        return ParsedReceipt(
-          amount: parsedAmount,
-          note: data['note'] as String? ?? 'Transfer BCA',
-          date: DateTime.tryParse(data['date'] as String? ?? '') ?? DateTime.now(),
-        );
-      } catch (e) {
-        lastException = Exception('Model $modelName failed: $e');
-        continue;
-      }
-    }
-    
-    // If we get here, all models failed. Let's fetch the list of available models to help debug.
-    String availableModels = "Could not fetch models.";
+  Future<ParsedReceipt?> scanReceipt(File imageFile) async {
+    final textRecognizer = TextRecognizer(script: TextRecognitionScript.latin);
     try {
-      final uri = Uri.parse('https://generativelanguage.googleapis.com/v1beta/models?key=$apiKey');
-      final req = await HttpClient().getUrl(uri);
-      final res = await req.close();
-      final body = await res.transform(utf8.decoder).join();
-      availableModels = body;
-    } catch (e) {
-      availableModels = 'Failed to fetch models: $e';
-    }
+      final inputImage = InputImage.fromFile(imageFile);
+      final RecognizedText recognizedText = await textRecognizer.processImage(inputImage);
+      
+      final text = recognizedText.text;
+      if (text.isEmpty) {
+        throw Exception('No text found in image.');
+      }
 
-    throw Exception('All fallback models failed. Last error: $lastException\n\nAvailable Models for your key:\n$availableModels');
+      // Simple heuristic parsing for Indonesian receipts (e.g., BCA, Gojek, Indomaret)
+      double amount = 0.0;
+      String note = 'Manual Scan';
+      DateTime date = DateTime.now();
+
+      final lines = text.split('\n');
+      
+      // 1. Extract Amount: Find all sequences of numbers, dots, and commas
+      // e.g. 101,000.00 or 101.000,00 or 150000
+      final priceRegex = RegExp(r'\b([0-9]{1,3}(?:[\.\,][0-9]{3})+(?:[\.\,][0-9]{2})?)\b');
+      final matches = priceRegex.allMatches(text);
+      for (final match in matches) {
+        String matchStr = match.group(1)!;
+        // Chop off .00 or ,00 decimals
+        if (matchStr.endsWith('.00') || matchStr.endsWith(',00')) {
+          matchStr = matchStr.substring(0, matchStr.length - 3);
+        }
+        String cleanStr = matchStr.replaceAll(RegExp(r'[^0-9]'), '');
+        if (cleanStr.isNotEmpty) {
+           double val = double.parse(cleanStr);
+           if (val > amount) amount = val;
+        }
+      }
+
+      // Fallback: Look for "Rp" or "IDR" followed by numbers
+      if (amount == 0.0) {
+         final rpRegex = RegExp(r'(?:rp|idr)[\s\:\.\,]*([0-9]+(?:[\.\,][0-9]+)*)', caseSensitive: false);
+         final rpMatches = rpRegex.allMatches(text);
+         for (final m in rpMatches) {
+            String matchStr = m.group(1)!;
+            if (matchStr.endsWith('.00') || matchStr.endsWith(',00')) {
+              matchStr = matchStr.substring(0, matchStr.length - 3);
+            }
+            String cleanStr = matchStr.replaceAll(RegExp(r'[^0-9]'), '');
+            if (cleanStr.isNotEmpty) {
+               double val = double.parse(cleanStr);
+               if (val > amount) amount = val;
+            }
+         }
+      }
+
+      // 2. Extract Date: Look for DD/MM/YYYY or DD-MM-YYYY
+      final dateRegex = RegExp(r'(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})');
+      for (final line in lines) {
+        final match = dateRegex.firstMatch(line);
+        if (match != null) {
+          final day = int.parse(match.group(1)!);
+          final month = int.parse(match.group(2)!);
+          final year = int.parse(match.group(3)!);
+          date = DateTime(year, month, day);
+          break;
+        }
+      }
+
+      // 3. Extract Note: Try to find a merchant name or "Transfer to"
+      for (final line in lines) {
+        final lower = line.toLowerCase();
+        if (lower.contains('ke :') || lower.contains('to:')) {
+           note = 'Transfer ' + line;
+           break;
+        } else if (lower.contains('indomaret') || lower.contains('alfamart')) {
+           note = 'Groceries';
+           break;
+        } else if (lower.contains('gojek') || lower.contains('grab')) {
+           note = 'Transport/Food';
+           break;
+        }
+      }
+
+      return ParsedReceipt(
+        amount: amount,
+        note: note,
+        date: date,
+      );
+    } catch (e) {
+      throw Exception('OCR Failed: $e');
+    } finally {
+      textRecognizer.close();
+    }
   }
 }
 
