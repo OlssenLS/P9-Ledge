@@ -36,6 +36,7 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
   int? _selectedCategoryId;
   int? _selectedAccountId;
   late DateTime _selectedDate;
+  bool _isNotesEnabled = false;
 
   @override
   void initState() {
@@ -47,6 +48,7 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
     _noteController = TextEditingController(
       text: widget.transaction?.note ?? widget.initialNote ?? '',
     );
+    _isNotesEnabled = _noteController.text.isNotEmpty;
     _selectedType = widget.transaction?.type ?? TransactionType.expense;
     _selectedCategoryId = widget.transaction?.categoryId;
     _selectedAccountId = widget.transaction?.accountId;
@@ -371,97 +373,135 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
 
           // Massive Amount Input
           Padding(
-            padding: const EdgeInsets.symmetric(vertical: Spacing.xl, horizontal: Spacing.md),
+            padding: const EdgeInsets.symmetric(vertical: Spacing.xl, horizontal: Spacing.xl),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text('AMOUNT', style: theme.textTheme.labelSmall?.copyWith(letterSpacing: 2, color: Colors.white38)),
                 const SizedBox(height: Spacing.xs),
-                TextField(
-                  controller: _amountController,
-                  keyboardType: TextInputType.number,
-                  textAlign: TextAlign.center,
-                  style: theme.textTheme.displayMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: activeColor,
-                  ),
-                  decoration: InputDecoration(
-                    prefixText: 'Rp ',
-                    prefixStyle: theme.textTheme.headlineMedium?.copyWith(color: activeColor.withValues(alpha: 0.6)),
-                    border: InputBorder.none,
-                    enabledBorder: InputBorder.none,
-                    focusedBorder: InputBorder.none,
-                    fillColor: Colors.transparent,
-                    hintText: '0',
-                    hintStyle: theme.textTheme.displayMedium?.copyWith(color: Colors.white24),
-                  ),
-                  onChanged: (val) {
-                    // Just force re-render for color syncing if we want it, but setState not strictly needed
-                  },
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.baseline,
+                  textBaseline: TextBaseline.alphabetic,
+                  children: [
+                    Text('IDR ', style: theme.textTheme.headlineMedium?.copyWith(color: activeColor.withValues(alpha: 0.6))),
+                    Expanded(
+                      child: TextField(
+                        controller: _amountController,
+                        keyboardType: TextInputType.number,
+                        textAlign: TextAlign.left,
+                        style: theme.textTheme.displayMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: activeColor,
+                        ),
+                        decoration: InputDecoration(
+                          border: InputBorder.none,
+                          enabledBorder: InputBorder.none,
+                          focusedBorder: InputBorder.none,
+                          fillColor: Colors.transparent,
+                          hintText: '0',
+                          hintStyle: theme.textTheme.displayMedium?.copyWith(color: Colors.white24),
+                          contentPadding: EdgeInsets.zero,
+                          isDense: true,
+                        ),
+                        onChanged: (val) {},
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
           ),
-
+          
           Expanded(
-            child: Container(
-              decoration: BoxDecoration(
-                color: theme.colorScheme.surface,
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(Radii.lg)),
-                border: const Border(top: BorderSide(color: Colors.white10)),
-              ),
-              child: ListView(
-                padding: const EdgeInsets.all(Spacing.md),
-                children: [
-                  _buildSelectorTile(
-                    title: 'Category',
-                    value: _selectedCategoryId != null
-                        ? ref.watch(watchCategoriesProvider).value?.where((c) => c.id == _selectedCategoryId).firstOrNull?.name ?? 'Select Category'
-                        : 'Select Category',
-                    icon: Icons.category_outlined,
-                    onTap: _showCategoryPicker,
+            child: ListView(
+              padding: const EdgeInsets.symmetric(horizontal: Spacing.md),
+              children: [
+                // First Card: Category, Account, Date
+                Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.white12),
+                    borderRadius: BorderRadius.circular(Radii.md),
                   ),
-                  const SizedBox(height: Spacing.md),
-                  _buildSelectorTile(
-                    title: 'Account',
-                    value: _selectedAccountId != null
-                        ? ref.watch(watchAccountsProvider).value?.where((a) => a.id == _selectedAccountId).firstOrNull?.name ?? 'Select Account'
-                        : 'Select Account',
-                    icon: Icons.account_balance_wallet_outlined,
-                    onTap: _showAccountPicker,
-                  ),
-                  const SizedBox(height: Spacing.md),
-                  _buildSelectorTile(
-                    title: 'Date',
-                    value: DateFormat.yMMMd().format(_selectedDate),
-                    icon: Icons.calendar_today_outlined,
-                    onTap: () {
-                      HapticFeedback.selectionClick();
-                      _pickDate();
-                    },
-                  ),
-                  const SizedBox(height: Spacing.md),
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.black26,
-                      borderRadius: BorderRadius.circular(Radii.md),
-                      border: Border.all(color: Colors.white10),
-                    ),
-                    child: TextField(
-                      controller: _noteController,
-                      decoration: const InputDecoration(
-                        hintText: 'Add a note...',
-                        prefixIcon: Icon(Icons.notes, color: Colors.white38),
-                        border: InputBorder.none,
-                        enabledBorder: InputBorder.none,
-                        focusedBorder: InputBorder.none,
-                        fillColor: Colors.transparent,
+                  child: Column(
+                    children: [
+                      _buildSelectorTile(
+                        title: 'Category',
+                        value: _selectedCategoryId != null 
+                            ? ref.watch(watchCategoriesProvider).value?.where((c) => c.id == _selectedCategoryId).firstOrNull?.name ?? 'Select Category'
+                            : 'Select Category',
+                        icon: Icons.category_outlined,
+                        onTap: _showCategoryPicker,
                       ),
-                      maxLines: 1,
-                    ),
+                      const Divider(height: 1, color: Colors.white12),
+                      _buildSelectorTile(
+                        title: 'Account',
+                        value: _selectedAccountId != null 
+                            ? ref.watch(watchAccountsProvider).value?.where((a) => a.id == _selectedAccountId).firstOrNull?.name ?? 'Select Account'
+                            : 'Select Account',
+                        icon: Icons.account_balance_wallet_outlined,
+                        onTap: _showAccountPicker,
+                      ),
+                      const Divider(height: 1, color: Colors.white12),
+                      _buildSelectorTile(
+                        title: 'Date',
+                        value: DateFormat.yMMMd().format(_selectedDate),
+                        icon: Icons.calendar_today_outlined,
+                        onTap: () {
+                          HapticFeedback.selectionClick();
+                          _pickDate();
+                        },
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 100), // padding for bottom button
-                ],
-              ),
+                ),
+                const SizedBox(height: Spacing.lg),
+                
+                // Second Card: Notes
+                Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.white12),
+                    borderRadius: BorderRadius.circular(Radii.md),
+                  ),
+                  child: Column(
+                    children: [
+                      SwitchListTile(
+                        title: const Text('Add Notes'),
+                        secondary: const Icon(Icons.notes, color: Colors.white60),
+                        value: _isNotesEnabled,
+                        activeTrackColor: activeColor.withValues(alpha: 0.3),
+                        activeThumbColor: activeColor,
+                        onChanged: (val) {
+                          HapticFeedback.selectionClick();
+                          setState(() {
+                            _isNotesEnabled = val;
+                            if (!val) _noteController.clear();
+                          });
+                        },
+                      ),
+                      if (_isNotesEnabled) ...[
+                        const Divider(height: 1, color: Colors.white12),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: Spacing.md, vertical: Spacing.sm),
+                          child: TextField(
+                            controller: _noteController,
+                            autofocus: true,
+                            decoration: const InputDecoration(
+                              hintText: 'Enter transaction note...',
+                              border: InputBorder.none,
+                              enabledBorder: InputBorder.none,
+                              focusedBorder: InputBorder.none,
+                              fillColor: Colors.transparent,
+                            ),
+                            maxLines: 3,
+                            minLines: 1,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 100), // padding for bottom button
+              ],
             ),
           ),
         ],
@@ -498,10 +538,6 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
       borderRadius: BorderRadius.circular(Radii.md),
       child: Container(
         padding: const EdgeInsets.all(Spacing.md),
-        decoration: BoxDecoration(
-          border: Border.all(color: Colors.white12),
-          borderRadius: BorderRadius.circular(Radii.md),
-        ),
         child: Row(
           children: [
             Icon(icon, color: Colors.white60),
