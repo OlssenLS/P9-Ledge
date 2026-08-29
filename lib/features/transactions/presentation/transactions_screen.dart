@@ -336,7 +336,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
               // Section 3: Transaction Logs Header
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(Spacing.md, Spacing.xl, Spacing.md, Spacing.sm),
+                  padding: const EdgeInsets.fromLTRB(Spacing.md, Spacing.md, Spacing.md, Spacing.sm),
                   child: _buildSectionHeader(theme, 'Transaction Log'),
                 ),
               ),
