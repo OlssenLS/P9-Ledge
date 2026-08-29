@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../transactions/presentation/transactions_screen.dart';
 import '../../accounts/presentation/accounts_screen.dart';
+import '../../analytics/presentation/analytics_screen.dart';
 import '../../transactions/presentation/transaction_form_screen.dart';
 import '../../transactions/data/receipt_scanner_service.dart';
 import '../../../core/theme/design_tokens.dart';
@@ -25,7 +26,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     TransactionsScreen(),
     AccountsScreen(),
     Scaffold(body: Center(child: Text('Add'))), // Placeholder, won't be shown
-    Scaffold(body: Center(child: Text('Logs'))), // Placeholder
+    AnalyticsScreen(),
     Scaffold(body: Center(child: Text('Settings'))), // Placeholder
   ];
 
@@ -253,7 +254,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ),
                 label: '',
               ),
-              const BottomNavigationBarItem(icon: Icon(Icons.analytics_outlined), activeIcon: Icon(Icons.analytics), label: 'Logs'),
+              const BottomNavigationBarItem(icon: Icon(Icons.analytics_outlined), activeIcon: Icon(Icons.analytics), label: 'Analytics'),
               const BottomNavigationBarItem(icon: Icon(Icons.settings_outlined), activeIcon: Icon(Icons.settings), label: 'Settings'),
             ],
           ),

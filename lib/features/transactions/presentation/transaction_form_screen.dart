@@ -487,8 +487,8 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
                                 scale: 0.8,
                                 child: CupertinoSwitch(
                                   value: _isNotesEnabled,
-                                  activeColor: activeColor,
-                                  trackColor: Colors.white12,
+                                  activeTrackColor: activeColor,
+                                  inactiveTrackColor: Colors.white12,
                                   onChanged: (val) {
                                     HapticFeedback.selectionClick();
                                     setState(() {
