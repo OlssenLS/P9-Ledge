@@ -13,7 +13,7 @@ class AccountsScreen extends ConsumerWidget {
     final accountsAsync = ref.watch(watchAccountsProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Accounts')),
+      appBar: AppBar(),
       body: accountsAsync.when(
         data: (accounts) {
           if (accounts.isEmpty) {

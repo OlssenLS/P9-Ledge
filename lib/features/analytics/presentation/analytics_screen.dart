@@ -18,7 +18,6 @@ class AnalyticsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Analytics', style: TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: false,
       ),
       body: transactionsAsync.when(

@@ -184,7 +184,6 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
           body: CustomScrollView(
             slivers: [
               SliverAppBar(
-                title: const Text('Journal', style: TextStyle(fontWeight: FontWeight.bold)),
                 centerTitle: false,
                 floating: true,
                 pinned: true,
