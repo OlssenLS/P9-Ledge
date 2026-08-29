@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -464,19 +465,42 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
                   ),
                   child: Column(
                     children: [
-                      SwitchListTile(
-                        title: const Text('Add Notes'),
-                        secondary: const Icon(Icons.notes, color: Colors.white60),
-                        value: _isNotesEnabled,
-                        activeTrackColor: activeColor.withValues(alpha: 0.3),
-                        activeThumbColor: activeColor,
-                        onChanged: (val) {
+                      InkWell(
+                        onTap: () {
                           HapticFeedback.selectionClick();
                           setState(() {
-                            _isNotesEnabled = val;
-                            if (!val) _noteController.clear();
+                            _isNotesEnabled = !_isNotesEnabled;
+                            if (!_isNotesEnabled) _noteController.clear();
                           });
                         },
+                        borderRadius: BorderRadius.circular(Radii.md),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: Spacing.md, vertical: 12),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.notes, color: Colors.white60),
+                              const SizedBox(width: Spacing.md),
+                              Expanded(
+                                child: Text('Add Notes', style: Theme.of(context).textTheme.titleMedium),
+                              ),
+                              Transform.scale(
+                                scale: 0.8,
+                                child: CupertinoSwitch(
+                                  value: _isNotesEnabled,
+                                  activeColor: activeColor,
+                                  trackColor: Colors.white12,
+                                  onChanged: (val) {
+                                    HapticFeedback.selectionClick();
+                                    setState(() {
+                                      _isNotesEnabled = val;
+                                      if (!val) _noteController.clear();
+                                    });
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                       if (_isNotesEnabled) ...[
                         const Divider(height: 1, color: Colors.white12),
