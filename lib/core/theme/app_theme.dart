@@ -43,12 +43,14 @@ class AppTheme {
           borderRadius: BorderRadius.all(Radius.circular(Radii.md)),
         ),
       ),
-      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-        backgroundColor: Color(0xFF1E1E1E),
-        selectedItemColor: Color(0xFF40E0D0),
-        unselectedItemColor: Colors.grey,
+      bottomNavigationBarTheme: BottomNavigationBarThemeData(
+        backgroundColor: const Color(0xFF121212),
+        selectedItemColor: const Color(0xFF40E0D0),
+        unselectedItemColor: Colors.white38,
         type: BottomNavigationBarType.fixed,
-        elevation: 8,
+        elevation: 0,
+        selectedLabelStyle: baseTextTheme.labelSmall?.copyWith(fontSize: 10, fontWeight: FontWeight.bold),
+        unselectedLabelStyle: baseTextTheme.labelSmall?.copyWith(fontSize: 10),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
