@@ -149,7 +149,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     if (xfile == null) return;
 
     setState(() => _isScanning = true);
-    
+
     try {
       final receipt = await scanner.scanReceipt(File(xfile.path));
       if (receipt != null && mounted) {
@@ -251,7 +251,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ),
                   child: const Icon(Icons.add, color: Colors.black, size: 24),
                 ),
-                label: 'Add',
+                label: '',
               ),
               const BottomNavigationBarItem(icon: Icon(Icons.analytics_outlined), activeIcon: Icon(Icons.analytics), label: 'Logs'),
               const BottomNavigationBarItem(icon: Icon(Icons.settings_outlined), activeIcon: Icon(Icons.settings), label: 'Settings'),
