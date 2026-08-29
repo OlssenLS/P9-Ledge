@@ -86,7 +86,7 @@ class AppTheme {
           borderRadius: BorderRadius.vertical(top: Radius.circular(Radii.lg)),
         ),
       ),
-      dialogTheme: DialogTheme(
+      dialogTheme: DialogThemeData(
         backgroundColor: const Color(0xFF1E1E1E),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(Radii.lg),

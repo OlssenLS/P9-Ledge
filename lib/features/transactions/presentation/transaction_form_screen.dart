@@ -168,7 +168,7 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
                     height: 80,
                     decoration: BoxDecoration(
                       color: widget.transaction!.category != null 
-                          ? Color(widget.transaction!.category!.color).withOpacity(0.15) 
+                          ? Color(widget.transaction!.category!.color).withValues(alpha: 0.15) 
                           : Colors.white10,
                       borderRadius: BorderRadius.circular(Radii.lg),
                     ),

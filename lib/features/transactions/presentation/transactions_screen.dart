@@ -112,7 +112,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
             Container(
               padding: const EdgeInsets.all(Spacing.sm),
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(Radii.sm),
               ),
               child: Icon(icon, color: Theme.of(context).colorScheme.primary),
@@ -291,7 +291,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                 if (_isScanning)
                   Positioned.fill(
                     child: Container(
-                      color: theme.scaffoldBackgroundColor.withOpacity(0.8),
+                      color: theme.scaffoldBackgroundColor.withValues(alpha: 0.8),
                       child: Center(
                         child: Container(
                           padding: const EdgeInsets.all(Spacing.xl),
@@ -345,7 +345,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: t.category != null ? Color(t.category!.color).withOpacity(0.15) : Colors.white10,
+                  color: t.category != null ? Color(t.category!.color).withValues(alpha: 0.15) : Colors.white10,
                   borderRadius: BorderRadius.circular(Radii.md),
                 ),
                 child: Icon(
