@@ -28,11 +28,7 @@ class ReceiptScannerService {
   }
 
   Future<ParsedReceipt?> scanReceipt(File imageFile, String apiKey) async {
-    final model = GenerativeModel(
-      model: 'gemini-1.5-flash',
-      apiKey: apiKey,
-    );
-
+    final modelNames = ['gemini-1.5-flash', 'gemini-1.5-flash-latest', 'gemini-1.5-pro', 'gemini-1.5-pro-latest', 'gemini-pro-vision'];
     final bytes = await imageFile.readAsBytes();
     final prompt = TextPart('''
 You are an AI receipt scanner for an Indonesian user.
@@ -49,44 +45,59 @@ Respond ONLY with a JSON object in this exact format, with no markdown formattin
 }
 ''');
     
-    final imagePart = DataPart('image/jpeg', bytes);
+    final ext = imageFile.path.split('.').last.toLowerCase();
+    final mimeType = (ext == 'png') ? 'image/png' : 'image/jpeg';
+    final imagePart = DataPart(mimeType, bytes);
     
-    try {
-      final response = await model.generateContent([
-        Content.multi([prompt, imagePart])
-      ]);
-      
-      final text = response.text;
-      if (text == null || text.isEmpty) {
-        throw Exception('AI returned empty response.');
-      }
-      
-      String rawText = text.trim();
-      if (rawText.startsWith('```')) {
-        final lines = rawText.split('\n');
-        if (lines.length > 2) {
-          rawText = lines.sublist(1, lines.length - 1).join('\n').trim();
+    Exception? lastException;
+    
+    for (final modelName in modelNames) {
+      try {
+        final model = GenerativeModel(
+          model: modelName,
+          apiKey: apiKey,
+        );
+        
+        final response = await model.generateContent([
+          Content.multi([prompt, imagePart])
+        ]);
+        
+        final text = response.text;
+        if (text == null || text.isEmpty) {
+          throw Exception('AI returned empty response.');
         }
+        
+        String rawText = text.trim();
+        if (rawText.startsWith('```')) {
+          final lines = rawText.split('\n');
+          if (lines.length > 2) {
+            rawText = lines.sublist(1, lines.length - 1).join('\n').trim();
+          }
+        }
+        
+        final Map<String, dynamic> data = jsonDecode(rawText);
+        
+        final rawAmount = data['amount'];
+        double parsedAmount = 0.0;
+        if (rawAmount is num) {
+          parsedAmount = rawAmount.toDouble();
+        } else if (rawAmount is String) {
+          parsedAmount = double.tryParse(rawAmount.replaceAll(RegExp(r'[^0-9.]'), '')) ?? 0.0;
+        }
+        
+        return ParsedReceipt(
+          amount: parsedAmount,
+          note: data['note'] as String? ?? 'Transfer BCA',
+          date: DateTime.tryParse(data['date'] as String? ?? '') ?? DateTime.now(),
+        );
+      } catch (e) {
+        lastException = Exception('Model $modelName failed: $e');
+        print(lastException);
+        continue;
       }
-      
-      final Map<String, dynamic> data = jsonDecode(rawText);
-      
-      final rawAmount = data['amount'];
-      double parsedAmount = 0.0;
-      if (rawAmount is num) {
-        parsedAmount = rawAmount.toDouble();
-      } else if (rawAmount is String) {
-        parsedAmount = double.tryParse(rawAmount.replaceAll(RegExp(r'[^0-9.]'), '')) ?? 0.0;
-      }
-      
-      return ParsedReceipt(
-        amount: parsedAmount,
-        note: data['note'] as String? ?? 'Transfer BCA',
-        date: DateTime.tryParse(data['date'] as String? ?? '') ?? DateTime.now(),
-      );
-    } catch (e, stack) {
-      throw Exception('Failed to parse AI response: $e');
     }
+    
+    throw Exception('All fallback models failed. Last error: $lastException');
   }
 }
 
