@@ -241,7 +241,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               }
             },
             items: [
-              const BottomNavigationBarItem(icon: Icon(Icons.receipt_long), label: 'Transactions'),
+              const BottomNavigationBarItem(icon: Icon(Icons.receipt_long), label: 'Journal'),
               const BottomNavigationBarItem(icon: Icon(Icons.account_balance_wallet_outlined), activeIcon: Icon(Icons.account_balance_wallet), label: 'Accounts'),
               BottomNavigationBarItem(
                 icon: Container(
