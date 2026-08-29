@@ -343,24 +343,34 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
               // Search Bar
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: Spacing.md, vertical: Spacing.sm),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white10,
-                      borderRadius: BorderRadius.circular(Radii.md),
-                    ),
-                    child: TextField(
-                      decoration: const InputDecoration(
-                        hintText: 'Search journal...',
-                        prefixIcon: Icon(Icons.search),
-                        border: InputBorder.none,
-                        enabledBorder: InputBorder.none,
-                        focusedBorder: InputBorder.none,
+                  padding: const EdgeInsets.symmetric(horizontal: Spacing.md, vertical: Spacing.md),
+                  child: TextField(
+                    style: const TextStyle(fontSize: 14, color: Colors.white),
+                    decoration: InputDecoration(
+                      filled: false,
+                      fillColor: Colors.transparent,
+                      hintText: 'Search journal...',
+                      hintStyle: const TextStyle(color: Colors.white38, fontSize: 14),
+                      prefixIcon: const Padding(
+                        padding: EdgeInsets.only(right: Spacing.sm),
+                        child: Icon(Icons.search, color: Colors.white38, size: 20),
                       ),
-                      onChanged: (val) {
-                        ref.read(searchQueryProvider.notifier).setQuery(val);
-                      },
+                      prefixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
+                      border: const UnderlineInputBorder(
+                        borderSide: BorderSide(color: Colors.white12),
+                      ),
+                      enabledBorder: const UnderlineInputBorder(
+                        borderSide: BorderSide(color: Colors.white12),
+                      ),
+                      focusedBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(color: theme.colorScheme.primary, width: 2),
+                      ),
+                      isDense: true,
+                      contentPadding: const EdgeInsets.symmetric(vertical: Spacing.sm),
                     ),
+                    onChanged: (val) {
+                      ref.read(searchQueryProvider.notifier).setQuery(val);
+                    },
                   ),
                 ),
               ),
