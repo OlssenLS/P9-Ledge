@@ -4,10 +4,9 @@ import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import 'dart:io';
 
-part 'app_database.g.dart';
+import '../domain/enums.dart';
 
-enum TransactionType { income, expense }
-enum AccountType { cash, bank, eWallet }
+part 'app_database.g.dart';
 
 class Transactions extends Table {
   IntColumn get id => integer().autoIncrement()();
