@@ -67,35 +67,77 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> with Ti
                     ),
                   ),
                 ),
+                const SizedBox(height: Spacing.xl),
+                Text(
+                  'Select Account',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
                 const SizedBox(height: Spacing.lg),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: Spacing.md),
-                  child: Text('Select Account', style: Theme.of(context).textTheme.titleLarge),
-                ),
-                const SizedBox(height: Spacing.md),
-                ListTile(
-                  title: const Text('All Accounts'),
-                  trailing: _selectedAccountId == null ? Icon(Icons.check, color: Theme.of(context).colorScheme.primary) : null,
-                  onTap: () {
-                    HapticFeedback.lightImpact();
-                    setState(() => _selectedAccountId = null);
-                    Navigator.pop(context);
-                  },
-                ),
-                ...accounts.map((acc) => ListTile(
-                  title: Text(acc.name),
-                  trailing: _selectedAccountId == acc.id ? Icon(Icons.check, color: Theme.of(context).colorScheme.primary) : null,
-                  onTap: () {
-                    HapticFeedback.lightImpact();
-                    setState(() => _selectedAccountId = acc.id);
-                    Navigator.pop(context);
-                  },
-                )),
+                _buildAccountOptionTile(null, 'All Accounts', null),
+                ...accounts.map((acc) => _buildAccountOptionTile(acc.id, acc.name, acc.type)),
               ],
             ),
           ),
         );
       },
+    );
+  }
+
+  Widget _buildAccountOptionTile(int? accountId, String name, AccountType? type) {
+    IconData icon = Icons.work_outline;
+    Color color = Theme.of(context).colorScheme.primary;
+
+    if (type != null) {
+      switch (type) {
+        case AccountType.cash:
+          icon = Icons.payments_outlined;
+          color = Theme.of(context).colorScheme.primary;
+          break;
+        case AccountType.bank:
+          icon = Icons.account_balance_outlined;
+          color = Colors.white;
+          break;
+        case AccountType.eWallet:
+          icon = Icons.account_balance_wallet_outlined;
+          color = Theme.of(context).colorScheme.secondary;
+          break;
+        case AccountType.rdn:
+          icon = Icons.trending_up;
+          color = Colors.purpleAccent;
+          break;
+      }
+    }
+
+    final isSelected = _selectedAccountId == accountId;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: Spacing.sm),
+      child: InkWell(
+        onTap: () {
+          HapticFeedback.selectionClick();
+          setState(() => _selectedAccountId = accountId);
+          Navigator.pop(context);
+        },
+        borderRadius: BorderRadius.circular(Radii.md),
+        child: Container(
+          padding: const EdgeInsets.all(Spacing.md),
+          decoration: BoxDecoration(
+            border: Border.all(color: isSelected ? color : Colors.white12),
+            borderRadius: BorderRadius.circular(Radii.md),
+            color: isSelected ? color.withValues(alpha: 0.1) : Colors.transparent,
+          ),
+          child: Row(
+            children: [
+              Icon(icon, color: color),
+              const SizedBox(width: Spacing.md),
+              Text(name, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+              const Spacer(),
+              if (isSelected)
+                Icon(Icons.check_circle, color: color),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
