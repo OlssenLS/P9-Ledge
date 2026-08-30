@@ -97,4 +97,100 @@ class AppTheme {
       useMaterial3: true,
     );
   }
+
+  static ThemeData get lightTheme {
+    final baseTextTheme = GoogleFonts.plusJakartaSansTextTheme(
+      ThemeData.light().textTheme,
+    );
+
+    return ThemeData(
+      brightness: Brightness.light,
+      scaffoldBackgroundColor: const Color(0xFFF8F9FA),
+      colorScheme: const ColorScheme.light(
+        primary: Color(0xFF40E0D0),
+        secondary: Color(0xFFFFA500),
+        surface: Colors.white,
+        error: Color(0xFFB00020),
+        onPrimary: Colors.black,
+        onSecondary: Colors.black,
+        onSurface: Colors.black87,
+      ),
+      textTheme: baseTextTheme.copyWith(
+        displayLarge: baseTextTheme.displayLarge?.copyWith(fontWeight: FontWeight.bold),
+        displayMedium: baseTextTheme.displayMedium?.copyWith(fontWeight: FontWeight.bold),
+        displaySmall: baseTextTheme.displaySmall?.copyWith(fontWeight: FontWeight.bold),
+        headlineLarge: baseTextTheme.headlineLarge?.copyWith(fontWeight: FontWeight.w700),
+        headlineMedium: baseTextTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w700),
+        headlineSmall: baseTextTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
+        titleLarge: baseTextTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
+        titleMedium: baseTextTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+        titleSmall: baseTextTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+      ),
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Color(0xFFF8F9FA),
+        elevation: 0,
+        centerTitle: true,
+        foregroundColor: Colors.black87,
+      ),
+      floatingActionButtonTheme: const FloatingActionButtonThemeData(
+        backgroundColor: Color(0xFF40E0D0),
+        foregroundColor: Colors.black,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(Radii.md)),
+        ),
+      ),
+      bottomNavigationBarTheme: BottomNavigationBarThemeData(
+        backgroundColor: Colors.white,
+        selectedItemColor: const Color(0xFF40E0D0),
+        unselectedItemColor: Colors.black38,
+        type: BottomNavigationBarType.fixed,
+        elevation: 0,
+        selectedLabelStyle: baseTextTheme.labelSmall?.copyWith(fontSize: 10, fontWeight: FontWeight.bold),
+        unselectedLabelStyle: baseTextTheme.labelSmall?.copyWith(fontSize: 10),
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: Colors.white,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: Spacing.md,
+          vertical: Spacing.md,
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(Radii.md),
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(Radii.md),
+          borderSide: const BorderSide(color: Colors.transparent),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(Radii.md),
+          borderSide: const BorderSide(color: Color(0xFF40E0D0), width: 2),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(Radii.md),
+          borderSide: const BorderSide(color: Color(0xFFB00020), width: 1),
+        ),
+      ),
+      cardTheme: CardThemeData(
+        color: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Radii.md)),
+        elevation: 0,
+        margin: EdgeInsets.zero,
+      ),
+      bottomSheetTheme: const BottomSheetThemeData(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(Radii.lg)),
+        ),
+      ),
+      dialogTheme: DialogThemeData(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(Radii.lg),
+        ),
+      ),
+      useMaterial3: true,
+    );
+  }
 }

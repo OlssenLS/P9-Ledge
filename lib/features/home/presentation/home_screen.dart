@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../transactions/presentation/transactions_screen.dart';
 import '../../accounts/presentation/accounts_screen.dart';
 import '../../analytics/presentation/analytics_screen.dart';
+import '../../settings/presentation/settings_screen.dart';
 import '../../transactions/presentation/transaction_form_screen.dart';
 import '../../transactions/data/receipt_scanner_service.dart';
 import '../../../core/theme/design_tokens.dart';
@@ -27,7 +28,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     AccountsScreen(),
     Scaffold(body: Center(child: Text('Add'))), // Placeholder, won't be shown
     AnalyticsScreen(),
-    Scaffold(body: Center(child: Text('Settings'))), // Placeholder
+    SettingsScreen(),
   ];
 
   Future<void> _showAddOptions() async {
@@ -220,11 +221,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ],
       ),
       bottomNavigationBar: Container(
-        decoration: const BoxDecoration(
-          color: Color(0xFF121212),
+        decoration: BoxDecoration(
+          color: Theme.of(context).bottomNavigationBarTheme.backgroundColor,
           border: Border(
             top: BorderSide(
-              color: Colors.white10,
+              color: Theme.of(context).brightness == Brightness.dark ? Colors.white10 : Colors.black12,
               width: 1.0,
             ),
           ),
