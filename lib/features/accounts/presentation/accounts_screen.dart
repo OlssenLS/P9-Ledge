@@ -23,20 +23,6 @@ class AccountsScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         centerTitle: false,
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: Spacing.sm),
-            child: IconButton(
-              icon: Icon(Icons.add_circle_outline, color: theme.colorScheme.primary),
-              onPressed: () {
-                HapticFeedback.mediumImpact();
-                Navigator.push(context, MaterialPageRoute(
-                  builder: (context) => const AccountFormScreen(),
-                ));
-              },
-            ),
-          ),
-        ],
       ),
       body: accountsAsync.when(
         data: (accounts) {
@@ -73,35 +59,52 @@ class AccountsScreen extends ConsumerWidget {
                 ),
               ),
 
-              if (accounts.isEmpty)
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.all(Spacing.xl),
-                    child: Center(
-                      child: Text(
-                        'No accounts found.\nTap + to create one.',
-                        textAlign: TextAlign.center,
-                        style: theme.textTheme.bodyLarge?.copyWith(color: Colors.white38),
-                      ),
-                    ),
-                  ),
-                )
-              else
-                SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: Spacing.md, vertical: Spacing.sm),
-                  sliver: SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        final account = accounts[index];
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: Spacing.md, vertical: Spacing.sm),
+                sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      if (index == accounts.length) {
+                        // The "Create Account" transparent text button
                         return Padding(
-                          padding: const EdgeInsets.only(bottom: Spacing.md),
-                          child: _buildAccountCard(context, account),
+                          padding: const EdgeInsets.symmetric(vertical: Spacing.md),
+                          child: Center(
+                            child: TextButton.icon(
+                              onPressed: () {
+                                HapticFeedback.mediumImpact();
+                                Navigator.push(context, MaterialPageRoute(
+                                  builder: (context) => const AccountFormScreen(),
+                                ));
+                              },
+                              icon: Icon(Icons.add, color: theme.colorScheme.primary, size: 20),
+                              label: Text(
+                                'CREATE ACCOUNT',
+                                style: theme.textTheme.labelLarge?.copyWith(
+                                  color: theme.colorScheme.primary,
+                                  letterSpacing: 1.5,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              style: TextButton.styleFrom(
+                                foregroundColor: theme.colorScheme.primary.withValues(alpha: 0.1),
+                                padding: const EdgeInsets.symmetric(horizontal: Spacing.xl, vertical: Spacing.md),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
+                              ),
+                            ),
+                          ),
                         ).animate().fadeIn(duration: 300.ms, delay: Duration(milliseconds: 50 * index)).slideY(begin: 0.1, end: 0);
-                      },
-                      childCount: accounts.length,
-                    ),
+                      }
+
+                      final account = accounts[index];
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: Spacing.md),
+                        child: _buildAccountCard(context, account),
+                      ).animate().fadeIn(duration: 300.ms, delay: Duration(milliseconds: 50 * index)).slideY(begin: 0.1, end: 0);
+                    },
+                    childCount: accounts.length + 1,
                   ),
                 ),
+              ),
                 
               const SliverToBoxAdapter(child: SizedBox(height: 100)), // Bottom padding for nav bar
             ],
@@ -131,6 +134,10 @@ class AccountsScreen extends ConsumerWidget {
       case AccountType.eWallet:
         icon = Icons.account_balance_wallet_outlined;
         typeColor = theme.colorScheme.secondary; // Orange
+        break;
+      case AccountType.rdn:
+        icon = Icons.trending_up; // Good for investment/RDN
+        typeColor = Colors.purpleAccent; // Distinct color for RDN
         break;
     }
 
