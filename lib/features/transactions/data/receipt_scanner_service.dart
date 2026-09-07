@@ -20,7 +20,7 @@ class ReceiptScannerService {
     try {
       final inputImage = InputImage.fromFile(imageFile);
       final RecognizedText recognizedText = await textRecognizer.processImage(inputImage);
-      
+
       final text = recognizedText.text;
       if (text.isEmpty) {
         throw Exception('No text found in image.');
@@ -32,7 +32,7 @@ class ReceiptScannerService {
       DateTime date = DateTime.now();
 
       final lines = text.split('\n');
-      
+
       // 1. Extract Amount: Find all sequences of numbers, dots, and commas
       // e.g. 101,000.00 or 101.000,00 or 150000
       final priceRegex = RegExp(r'\b([0-9]{1,3}(?:[\.\,][0-9]{3})+(?:[\.\,][0-9]{2})?)\b');
@@ -84,7 +84,7 @@ class ReceiptScannerService {
       for (final line in lines) {
         final lower = line.toLowerCase();
         if (lower.contains('ke :') || lower.contains('to:')) {
-           note = 'Transfer ' + line;
+           note = 'Transfer $line';
            break;
         } else if (lower.contains('indomaret') || lower.contains('alfamart')) {
            note = 'Groceries';

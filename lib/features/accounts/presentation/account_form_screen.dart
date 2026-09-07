@@ -5,7 +5,6 @@ import '../domain/account_entity.dart';
 import 'accounts_providers.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/theme/design_tokens.dart';
-import '../../../core/utils/currency_formatter.dart';
 
 class AccountFormScreen extends ConsumerStatefulWidget {
   final AccountEntity? account;
@@ -21,7 +20,7 @@ class _AccountFormScreenState extends ConsumerState<AccountFormScreen> {
   late TextEditingController _nameController;
   late TextEditingController _balanceController;
   late AccountType _selectedType;
-  
+
   final _amountFocus = FocusNode();
 
   @override
@@ -46,7 +45,7 @@ class _AccountFormScreenState extends ConsumerState<AccountFormScreen> {
     if (_formKey.currentState!.validate()) {
       final repo = ref.read(accountsRepositoryProvider);
       final balance = double.tryParse(_balanceController.text.replaceAll(',', '')) ?? 0.0;
-      
+
       if (widget.account == null) {
         await repo.addAccount(_nameController.text, _selectedType, balance);
       } else {
@@ -61,7 +60,7 @@ class _AccountFormScreenState extends ConsumerState<AccountFormScreen> {
     await repo.deleteAccount(widget.account!.id);
     if (mounted) Navigator.pop(context);
   }
-  
+
   void _showTypePicker() {
     HapticFeedback.selectionClick();
     showModalBottomSheet(
@@ -109,7 +108,7 @@ class _AccountFormScreenState extends ConsumerState<AccountFormScreen> {
     IconData icon;
     Color color;
     String label = type.name.toUpperCase();
-    
+
     switch (type) {
       case AccountType.cash:
         icon = Icons.payments_outlined;
@@ -164,7 +163,7 @@ class _AccountFormScreenState extends ConsumerState<AccountFormScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isEditing = widget.account != null;
-    
+
     String typeLabel = _selectedType.name.toUpperCase();
 
     return Scaffold(
@@ -264,7 +263,7 @@ class _AccountFormScreenState extends ConsumerState<AccountFormScreen> {
                     ),
                   ),
                   Divider(height: 1, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.10)),
-                  
+
                   // Type Selector
                   InkWell(
                     onTap: _showTypePicker,
@@ -287,9 +286,9 @@ class _AccountFormScreenState extends ConsumerState<AccountFormScreen> {
                 ],
               ),
             ),
-            
+
             const SizedBox(height: Spacing.xxl),
-            
+
             if (isEditing)
               TextButton.icon(
                 onPressed: () async {
@@ -301,7 +300,7 @@ class _AccountFormScreenState extends ConsumerState<AccountFormScreen> {
                       actions: [
                         TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
                         TextButton(
-                          onPressed: () => Navigator.pop(ctx, true), 
+                          onPressed: () => Navigator.pop(ctx, true),
                           style: TextButton.styleFrom(foregroundColor: theme.colorScheme.error),
                           child: const Text('Delete')
                         ),

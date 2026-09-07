@@ -11,7 +11,6 @@ import '../../../core/presentation/widgets/premium_empty_state.dart';
 
 import '../../../core/utils/currency_formatter.dart';
 import '../../transactions/presentation/transactions_providers.dart';
-import '../../transactions/domain/transaction_entity.dart';
 
 enum ChartType { pie, bar, line }
 
@@ -53,7 +52,7 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
           final Map<int, double> expenseByCategory = {};
           final Map<int, Color> categoryColors = {};
           final Map<int, String> categoryNames = {};
-          
+
           final int daysInMonth = DateTime(now.year, now.month + 1, 0).day;
           List<double> dailyExpenses = List.filled(daysInMonth, 0.0);
           double largestTx = 0.0;
@@ -65,7 +64,7 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
               totalExpense += t.amount;
               dailyExpenses[t.date.day - 1] += t.amount;
               if (t.amount > largestTx) largestTx = t.amount;
-              
+
               if (t.category != null) {
                 final catId = t.category!.id;
                 expenseByCategory[catId] = (expenseByCategory[catId] ?? 0) + t.amount;
@@ -74,7 +73,7 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
               }
             }
           }
-          
+
           // Insights
           String topCategory = 'None';
           double topCatValue = 0;
@@ -84,7 +83,7 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
               topCategory = categoryNames[key] ?? 'Unknown';
             }
           });
-          
+
           final double avgDailySpend = totalExpense / max(1, now.day);
           final double maxDailySpend = dailyExpenses.reduce(max);
 
@@ -121,46 +120,41 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
                     const SizedBox(height: Spacing.xxl),
 
                     // Chart Section Header
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text('SPENDING TRENDS', style: theme.textTheme.labelSmall?.copyWith(letterSpacing: 1.5, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.60))),
-                        _buildChartTypeSelector(theme),
-                      ],
-                    ),
+                    Text('SPENDING TRENDS', style: theme.textTheme.labelSmall?.copyWith(letterSpacing: 1.5, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.60))),
                     const SizedBox(height: Spacing.lg),
-                    
+
                     // Chart Display
                     Container(
-                      height: 250,
                       padding: const EdgeInsets.all(Spacing.lg),
                       decoration: BoxDecoration(
                         color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.02),
                         border: Border.all(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.12)),
                         borderRadius: BorderRadius.circular(Radii.lg),
                       ),
-                      child: AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 300),
-                        transitionBuilder: (Widget child, Animation<double> animation) {
-                          return FadeTransition(opacity: animation, child: ScaleTransition(scale: animation, child: child));
-                        },
-                        child: KeyedSubtree(
-                          key: ValueKey(_selectedChart),
-                          child: _buildSelectedChart(
-                            theme: theme, 
-                            expenseByCategory: expenseByCategory, 
-                            categoryColors: categoryColors, 
-                            dailyExpenses: dailyExpenses,
-                            maxDailySpend: maxDailySpend,
+                      child: Column(
+                        children: [
+                          SizedBox(
+                            height: 200,
+                            child: _buildSelectedChart(
+                              theme: theme,
+                              expenseByCategory: expenseByCategory,
+                              categoryColors: categoryColors,
+                              dailyExpenses: dailyExpenses,
+                              maxDailySpend: maxDailySpend,
+                            ),
                           ),
-                        ),
+                          const SizedBox(height: Spacing.lg),
+                          Divider(height: 1, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.1)),
+                          const SizedBox(height: Spacing.sm),
+                          _buildChartTypeSelector(theme),
+                        ],
                       ),
                     ),
-                    
+
                     const SizedBox(height: Spacing.xxl),
                     Text('KEY INSIGHTS', style: theme.textTheme.labelSmall?.copyWith(letterSpacing: 1.5, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.60))),
                     const SizedBox(height: Spacing.md),
-                    
+
                     // Key Insights Cards
                     Row(
                       children: [
@@ -177,7 +171,7 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
                         Expanded(child: _buildInsightCard(context, 'Active Days', '${dailyExpenses.where((d) => d > 0).length} Days', Icons.calendar_today, Colors.greenAccent)),
                       ],
                     ),
-                    
+
                     const SizedBox(height: 100),
                   ]),
                 ),
@@ -190,26 +184,26 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
       ),
     );
   }
-  
+
   Widget _buildChartTypeSelector(ThemeData theme) {
     return Container(
+      padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(100),
         border: Border.all(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.10)),
       ),
       child: Row(
-        mainAxisSize: MainAxisSize.min,
         children: [
-          _buildChartIcon(ChartType.pie, Icons.pie_chart, theme),
-          _buildChartIcon(ChartType.bar, Icons.bar_chart, theme),
-          _buildChartIcon(ChartType.line, Icons.show_chart, theme),
+          Expanded(child: _buildChartIcon(ChartType.pie, Icons.pie_chart, 'Pie', theme)),
+          Expanded(child: _buildChartIcon(ChartType.bar, Icons.bar_chart, 'Bar', theme)),
+          Expanded(child: _buildChartIcon(ChartType.line, Icons.show_chart, 'Line', theme)),
         ],
       ),
     );
   }
-  
-  Widget _buildChartIcon(ChartType type, IconData icon, ThemeData theme) {
+
+  Widget _buildChartIcon(ChartType type, IconData icon, String label, ThemeData theme) {
     final isSelected = _selectedChart == type;
     return InkWell(
       onTap: () {
@@ -218,12 +212,21 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
       },
       borderRadius: BorderRadius.circular(100),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        padding: const EdgeInsets.symmetric(vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? theme.colorScheme.primary.withValues(alpha: 0.2) : Colors.transparent,
+          color: isSelected ? theme.colorScheme.onSurface.withValues(alpha: 0.1) : Colors.transparent,
           borderRadius: BorderRadius.circular(100),
         ),
-        child: Icon(icon, size: 18, color: isSelected ? theme.colorScheme.primary : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.38)),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 16, color: isSelected ? theme.colorScheme.onSurface : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.38)),
+            if (isSelected) ...[
+              const SizedBox(width: 4),
+              Text(label, style: theme.textTheme.labelSmall?.copyWith(color: theme.colorScheme.onSurface, fontWeight: FontWeight.bold)),
+            ]
+          ],
+        ),
       ),
     );
   }
@@ -250,6 +253,8 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
             );
           }).toList(),
         ),
+        duration: const Duration(milliseconds: 800),
+        curve: Curves.easeOutQuint,
       );
     } else if (_selectedChart == ChartType.bar) {
       return BarChart(
@@ -292,6 +297,8 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
             );
           }).toList(),
         ),
+        duration: const Duration(milliseconds: 800),
+        curve: Curves.easeOutQuint,
       );
     } else {
       // Line Chart
@@ -335,6 +342,8 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
             ),
           ],
         ),
+        duration: const Duration(milliseconds: 800),
+        curve: Curves.easeOutQuint,
       );
     }
   }
@@ -369,7 +378,7 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
       ),
     );
   }
-  
+
   Widget _buildInsightCard(BuildContext context, String title, String value, IconData icon, Color iconColor) {
     final theme = Theme.of(context);
     return Container(
