@@ -12,8 +12,9 @@ class Transactions extends Table {
   IntColumn get id => integer().autoIncrement()();
   RealColumn get amount => real()();
   IntColumn get type => intEnum<TransactionType>()();
-  IntColumn get categoryId => integer()();
+  IntColumn get categoryId => integer().nullable()();
   IntColumn get accountId => integer()();
+  IntColumn get toAccountId => integer().nullable()();
   TextColumn get note => text().nullable()();
   DateTimeColumn get date => dateTime()();
 }

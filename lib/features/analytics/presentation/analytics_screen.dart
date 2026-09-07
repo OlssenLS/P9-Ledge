@@ -7,6 +7,8 @@ import 'package:fl_chart/fl_chart.dart';
 
 import '../../../core/domain/enums.dart';
 import '../../../core/theme/design_tokens.dart';
+import '../../../core/presentation/widgets/premium_empty_state.dart';
+
 import '../../../core/utils/currency_formatter.dart';
 import '../../transactions/presentation/transactions_providers.dart';
 import '../../transactions/domain/transaction_entity.dart';
@@ -31,22 +33,20 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
     return Scaffold(
       appBar: AppBar(
         centerTitle: false,
-        title: Text('ANALYTICS', style: theme.textTheme.labelSmall?.copyWith(letterSpacing: 1.5, color: Colors.white38)),
+        title: Text('ANALYTICS', style: theme.textTheme.labelSmall?.copyWith(letterSpacing: 1.5, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.38))),
       ),
       body: transactionsAsync.when(
         data: (transactions) {
           if (transactions.isEmpty) {
-            return Center(
-              child: Text(
-                'No data available.',
-                style: theme.textTheme.bodyLarge?.copyWith(color: Colors.white38),
-              ),
+            return const PremiumEmptyState(
+              icon: Icons.analytics_outlined,
+              title: 'Not enough data',
+              subtitle: 'Analytics will appear here once you start adding transactions.',
             );
           }
 
-          // Compute this month's stats
           final now = DateTime.now();
-          final thisMonthTxs = transactions.where((t) => t.date.month == now.month && t.date.year == now.year).toList();
+          final thisMonthTxs = transactions.where((t) => t.date.month == now.month && t.date.year == now.year && t.type != TransactionType.transfer).toList();
 
           double totalIncome = 0;
           double totalExpense = 0;
@@ -124,7 +124,7 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('SPENDING TRENDS', style: theme.textTheme.labelSmall?.copyWith(letterSpacing: 1.5, color: Colors.white60)),
+                        Text('SPENDING TRENDS', style: theme.textTheme.labelSmall?.copyWith(letterSpacing: 1.5, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.60))),
                         _buildChartTypeSelector(theme),
                       ],
                     ),
@@ -135,21 +135,30 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
                       height: 250,
                       padding: const EdgeInsets.all(Spacing.lg),
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.02),
-                        border: Border.all(color: Colors.white12),
+                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.02),
+                        border: Border.all(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.12)),
                         borderRadius: BorderRadius.circular(Radii.lg),
                       ),
-                      child: _buildSelectedChart(
-                        theme: theme, 
-                        expenseByCategory: expenseByCategory, 
-                        categoryColors: categoryColors, 
-                        dailyExpenses: dailyExpenses,
-                        maxDailySpend: maxDailySpend,
+                      child: AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 300),
+                        transitionBuilder: (Widget child, Animation<double> animation) {
+                          return FadeTransition(opacity: animation, child: ScaleTransition(scale: animation, child: child));
+                        },
+                        child: KeyedSubtree(
+                          key: ValueKey(_selectedChart),
+                          child: _buildSelectedChart(
+                            theme: theme, 
+                            expenseByCategory: expenseByCategory, 
+                            categoryColors: categoryColors, 
+                            dailyExpenses: dailyExpenses,
+                            maxDailySpend: maxDailySpend,
+                          ),
+                        ),
                       ),
                     ),
                     
                     const SizedBox(height: Spacing.xxl),
-                    Text('KEY INSIGHTS', style: theme.textTheme.labelSmall?.copyWith(letterSpacing: 1.5, color: Colors.white60)),
+                    Text('KEY INSIGHTS', style: theme.textTheme.labelSmall?.copyWith(letterSpacing: 1.5, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.60))),
                     const SizedBox(height: Spacing.md),
                     
                     // Key Insights Cards
@@ -185,9 +194,9 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
   Widget _buildChartTypeSelector(ThemeData theme) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
+        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(100),
-        border: Border.all(color: Colors.white10),
+        border: Border.all(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.10)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -214,7 +223,7 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
           color: isSelected ? theme.colorScheme.primary.withValues(alpha: 0.2) : Colors.transparent,
           borderRadius: BorderRadius.circular(100),
         ),
-        child: Icon(icon, size: 18, color: isSelected ? theme.colorScheme.primary : Colors.white38),
+        child: Icon(icon, size: 18, color: isSelected ? theme.colorScheme.primary : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.38)),
       ),
     );
   }
@@ -227,7 +236,7 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
     required double maxDailySpend,
   }) {
     if (_selectedChart == ChartType.pie) {
-      if (expenseByCategory.isEmpty) return const Center(child: Text('No category data', style: TextStyle(color: Colors.white38)));
+      if (expenseByCategory.isEmpty) return Center(child: Text('No category data', style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.38))));
       return PieChart(
         PieChartData(
           sectionsSpace: 2,
@@ -257,7 +266,7 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
                   if (value % 5 != 0) return const SizedBox.shrink();
                   return Padding(
                     padding: const EdgeInsets.only(top: 8.0),
-                    child: Text(value.toInt().toString(), style: const TextStyle(color: Colors.white38, fontSize: 10)),
+                    child: Text(value.toInt().toString(), style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.38), fontSize: 10)),
                   );
                 },
                 reservedSize: 22,
@@ -300,7 +309,7 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
                   if (value % 5 != 0) return const SizedBox.shrink();
                   return Padding(
                     padding: const EdgeInsets.only(top: 8.0),
-                    child: Text(value.toInt().toString(), style: const TextStyle(color: Colors.white38, fontSize: 10)),
+                    child: Text(value.toInt().toString(), style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.38), fontSize: 10)),
                   );
                 },
                 reservedSize: 22,
@@ -352,7 +361,7 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
           const SizedBox(height: Spacing.sm),
           Text(
             CurrencyFormatter.format(amount),
-            style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold, color: Colors.white),
+            style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
@@ -366,9 +375,9 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
     return Container(
       padding: const EdgeInsets.all(Spacing.md),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.03),
+        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.03),
         borderRadius: BorderRadius.circular(Radii.md),
-        border: Border.all(color: Colors.white12),
+        border: Border.all(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.12)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -380,7 +389,7 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
               Expanded(
                 child: Text(
                   title,
-                  style: theme.textTheme.labelSmall?.copyWith(color: Colors.white60),
+                  style: theme.textTheme.labelSmall?.copyWith(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.60)),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -390,7 +399,7 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
           const SizedBox(height: Spacing.sm),
           Text(
             value,
-            style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold, color: Colors.white),
+            style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),

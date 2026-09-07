@@ -10,18 +10,22 @@ class TransactionsDataSource {
   TransactionsDataSource(this._db);
 
   Stream<List<TypedResult>> watchTransactionsWithRelations() {
+    final toAccounts = _db.alias(_db.accounts, 'to_accounts');
     final query = _db.select(_db.transactions).join([
       leftOuterJoin(_db.categories, _db.categories.id.equalsExp(_db.transactions.categoryId)),
       leftOuterJoin(_db.accounts, _db.accounts.id.equalsExp(_db.transactions.accountId)),
+      leftOuterJoin(toAccounts, toAccounts.id.equalsExp(_db.transactions.toAccountId)),
     ]);
     query.orderBy([OrderingTerm.desc(_db.transactions.date)]);
     return query.watch();
   }
 
   Future<List<TypedResult>> getTransactionsWithRelations() {
+    final toAccounts = _db.alias(_db.accounts, 'to_accounts');
     final query = _db.select(_db.transactions).join([
       leftOuterJoin(_db.categories, _db.categories.id.equalsExp(_db.transactions.categoryId)),
       leftOuterJoin(_db.accounts, _db.accounts.id.equalsExp(_db.transactions.accountId)),
+      leftOuterJoin(toAccounts, toAccounts.id.equalsExp(_db.transactions.toAccountId)),
     ]);
     query.orderBy([OrderingTerm.desc(_db.transactions.date)]);
     return query.get();
@@ -30,16 +34,18 @@ class TransactionsDataSource {
   Future<int> addTransaction({
     required double amount,
     required TransactionType type,
-    required int categoryId,
+    int? categoryId,
     required int accountId,
+    int? toAccountId,
     String? note,
     required DateTime date,
   }) {
     return _db.into(_db.transactions).insert(TransactionsCompanion.insert(
       amount: amount,
       type: type,
-      categoryId: categoryId,
+      categoryId: Value(categoryId),
       accountId: accountId,
+      toAccountId: Value(toAccountId),
       note: Value(note),
       date: date,
     ));
@@ -49,8 +55,9 @@ class TransactionsDataSource {
     required int id,
     required double amount,
     required TransactionType type,
-    required int categoryId,
+    int? categoryId,
     required int accountId,
+    int? toAccountId,
     String? note,
     required DateTime date,
   }) {
@@ -60,6 +67,7 @@ class TransactionsDataSource {
       type: type,
       categoryId: categoryId,
       accountId: accountId,
+      toAccountId: toAccountId,
       note: note,
       date: date,
     ));

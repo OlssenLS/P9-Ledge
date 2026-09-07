@@ -19,6 +19,8 @@ class TransactionsRepositoryImpl implements TransactionsRepository {
     final t = row.readTable(_db.transactions);
     final c = row.readTableOrNull(_db.categories);
     final a = row.readTableOrNull(_db.accounts);
+    final toAccountsAlias = _db.alias(_db.accounts, 'to_accounts');
+    final toA = row.readTableOrNull(toAccountsAlias);
 
     return TransactionEntity(
       id: t.id,
@@ -26,6 +28,7 @@ class TransactionsRepositoryImpl implements TransactionsRepository {
       type: t.type,
       categoryId: t.categoryId,
       accountId: t.accountId,
+      toAccountId: t.toAccountId,
       note: t.note,
       date: t.date,
       category: c != null ? CategoryEntity(
@@ -39,7 +42,14 @@ class TransactionsRepositoryImpl implements TransactionsRepository {
         name: a.name,
         type: a.type,
         startingBalance: a.startingBalance,
-        currentBalance: a.startingBalance, // UI doesn't need running balance for transaction list
+        currentBalance: a.startingBalance, 
+      ) : null,
+      toAccount: toA != null ? AccountEntity(
+        id: toA.id,
+        name: toA.name,
+        type: toA.type,
+        startingBalance: toA.startingBalance,
+        currentBalance: toA.startingBalance,
       ) : null,
     );
   }
@@ -61,8 +71,9 @@ class TransactionsRepositoryImpl implements TransactionsRepository {
   Future<int> addTransaction({
     required double amount,
     required TransactionType type,
-    required int categoryId,
+    int? categoryId,
     required int accountId,
+    int? toAccountId,
     String? note,
     required DateTime date,
   }) {
@@ -71,6 +82,7 @@ class TransactionsRepositoryImpl implements TransactionsRepository {
       type: type,
       categoryId: categoryId,
       accountId: accountId,
+      toAccountId: toAccountId,
       note: note,
       date: date,
     );
@@ -81,8 +93,9 @@ class TransactionsRepositoryImpl implements TransactionsRepository {
     required int id,
     required double amount,
     required TransactionType type,
-    required int categoryId,
+    int? categoryId,
     required int accountId,
+    int? toAccountId,
     String? note,
     required DateTime date,
   }) {
@@ -92,6 +105,7 @@ class TransactionsRepositoryImpl implements TransactionsRepository {
       type: type,
       categoryId: categoryId,
       accountId: accountId,
+      toAccountId: toAccountId,
       note: note,
       date: date,
     );

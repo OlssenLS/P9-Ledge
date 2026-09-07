@@ -85,7 +85,7 @@ class _AccountFormScreenState extends ConsumerState<AccountFormScreen> {
                     width: 40,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: Colors.white24,
+                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.24),
                       borderRadius: BorderRadius.circular(Radii.sm),
                     ),
                   ),
@@ -117,7 +117,7 @@ class _AccountFormScreenState extends ConsumerState<AccountFormScreen> {
         break;
       case AccountType.bank:
         icon = Icons.account_balance_outlined;
-        color = Colors.white;
+        color = Theme.of(context).colorScheme.onSurface;
         break;
       case AccountType.eWallet:
         icon = Icons.account_balance_wallet_outlined;
@@ -141,7 +141,7 @@ class _AccountFormScreenState extends ConsumerState<AccountFormScreen> {
         child: Container(
           padding: const EdgeInsets.all(Spacing.md),
           decoration: BoxDecoration(
-            border: Border.all(color: _selectedType == type ? color : Colors.white12),
+            border: Border.all(color: _selectedType == type ? color : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.12)),
             borderRadius: BorderRadius.circular(Radii.md),
             color: _selectedType == type ? color.withValues(alpha: 0.1) : Colors.transparent,
           ),
@@ -185,21 +185,21 @@ class _AccountFormScreenState extends ConsumerState<AccountFormScreen> {
             Container(
               padding: const EdgeInsets.all(Spacing.xl),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.03),
+                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.03),
                 borderRadius: BorderRadius.circular(Radii.lg),
-                border: Border.all(color: Colors.white12),
+                border: Border.all(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.12)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('STARTING BALANCE', style: theme.textTheme.labelSmall?.copyWith(letterSpacing: 1.5, color: Colors.white38)),
+                  Text('STARTING BALANCE', style: theme.textTheme.labelSmall?.copyWith(letterSpacing: 1.5, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.38))),
                   const SizedBox(height: Spacing.sm),
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Text(
                         'IDR',
-                        style: theme.textTheme.titleMedium?.copyWith(color: Colors.white60, fontWeight: FontWeight.bold),
+                        style: theme.textTheme.titleMedium?.copyWith(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.60), fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(width: Spacing.sm),
                       Expanded(
@@ -207,10 +207,10 @@ class _AccountFormScreenState extends ConsumerState<AccountFormScreen> {
                           controller: _balanceController,
                           focusNode: _amountFocus,
                           keyboardType: TextInputType.number,
-                          style: theme.textTheme.displaySmall?.copyWith(fontWeight: FontWeight.bold, color: Colors.white),
+                          style: theme.textTheme.displaySmall?.copyWith(fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface),
                           decoration: InputDecoration(
                             hintText: '0',
-                            hintStyle: theme.textTheme.displaySmall?.copyWith(color: Colors.white24),
+                            hintStyle: theme.textTheme.displaySmall?.copyWith(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.24)),
                             border: InputBorder.none,
                             enabledBorder: InputBorder.none,
                             focusedBorder: InputBorder.none,
@@ -231,9 +231,9 @@ class _AccountFormScreenState extends ConsumerState<AccountFormScreen> {
             // Details Card
             Container(
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.03),
+                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.03),
                 borderRadius: BorderRadius.circular(Radii.lg),
-                border: Border.all(color: Colors.white12),
+                border: Border.all(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.12)),
               ),
               child: Column(
                 children: [
@@ -242,7 +242,7 @@ class _AccountFormScreenState extends ConsumerState<AccountFormScreen> {
                     padding: const EdgeInsets.fromLTRB(Spacing.lg, Spacing.sm, Spacing.lg, Spacing.xs),
                     child: Row(
                       children: [
-                        const Icon(Icons.edit_note, color: Colors.white60, size: 20),
+                        Icon(Icons.edit_note, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.60), size: 20),
                         const SizedBox(width: Spacing.md),
                         Expanded(
                           child: TextFormField(
@@ -250,7 +250,7 @@ class _AccountFormScreenState extends ConsumerState<AccountFormScreen> {
                             style: theme.textTheme.titleMedium,
                             decoration: InputDecoration(
                               hintText: 'Account Name (e.g. BCA, GoPay)',
-                              hintStyle: const TextStyle(color: Colors.white38),
+                              hintStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.38)),
                               border: InputBorder.none,
                               enabledBorder: InputBorder.none,
                               focusedBorder: InputBorder.none,
@@ -263,7 +263,7 @@ class _AccountFormScreenState extends ConsumerState<AccountFormScreen> {
                       ],
                     ),
                   ),
-                  const Divider(height: 1, color: Colors.white10),
+                  Divider(height: 1, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.10)),
                   
                   // Type Selector
                   InkWell(
@@ -273,13 +273,13 @@ class _AccountFormScreenState extends ConsumerState<AccountFormScreen> {
                       padding: const EdgeInsets.all(Spacing.lg),
                       child: Row(
                         children: [
-                          const Icon(Icons.category_outlined, color: Colors.white60, size: 20),
+                          Icon(Icons.category_outlined, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.60), size: 20),
                           const SizedBox(width: Spacing.md),
                           Text('Type', style: theme.textTheme.titleMedium),
                           const Spacer(),
                           Text(typeLabel, style: theme.textTheme.titleMedium?.copyWith(color: theme.colorScheme.primary)),
                           const SizedBox(width: Spacing.xs),
-                          const Icon(Icons.chevron_right, color: Colors.white38),
+                          Icon(Icons.chevron_right, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.38)),
                         ],
                       ),
                     ),

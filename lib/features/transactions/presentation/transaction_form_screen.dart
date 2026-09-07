@@ -36,6 +36,7 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
   late TransactionType _selectedType;
   int? _selectedCategoryId;
   int? _selectedAccountId;
+  int? _selectedToAccountId;
   late DateTime _selectedDate;
   bool _isNotesEnabled = false;
 
@@ -53,6 +54,7 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
     _selectedType = widget.transaction?.type ?? TransactionType.expense;
     _selectedCategoryId = widget.transaction?.categoryId;
     _selectedAccountId = widget.transaction?.accountId;
+    _selectedToAccountId = widget.transaction?.toAccountId;
     _selectedDate = widget.transaction?.date ?? widget.initialDate ?? DateTime.now();
   }
 
@@ -162,7 +164,7 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
                 subtitle: const Text('Money leaving your accounts (e.g., bills, food)'),
                 trailing: _selectedType == TransactionType.expense 
                     ? Icon(Icons.radio_button_checked, color: Theme.of(context).colorScheme.error) 
-                    : const Icon(Icons.radio_button_unchecked, color: Colors.white38),
+                    : Icon(Icons.radio_button_unchecked, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.38)),
                 onTap: () {
                   HapticFeedback.lightImpact();
                   setState(() => _selectedType = TransactionType.expense);
@@ -175,7 +177,7 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
                 subtitle: const Text('Money entering your accounts (e.g., salary)'),
                 trailing: _selectedType == TransactionType.income 
                     ? Icon(Icons.radio_button_checked, color: Theme.of(context).colorScheme.primary) 
-                    : const Icon(Icons.radio_button_unchecked, color: Colors.white38),
+                    : Icon(Icons.radio_button_unchecked, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.38)),
                 onTap: () {
                   HapticFeedback.lightImpact();
                   setState(() => _selectedType = TransactionType.income);
@@ -228,7 +230,7 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
     );
   }
 
-  void _showAccountPicker() {
+  void _showAccountPicker({bool isDestination = false}) {
     HapticFeedback.selectionClick();
     showModalBottomSheet(
       context: context,
@@ -283,7 +285,7 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: Colors.white24,
+                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.24),
                 borderRadius: BorderRadius.circular(Radii.sm),
               ),
             ),
@@ -323,7 +325,7 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: Colors.white10,
+                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.10),
                     borderRadius: BorderRadius.circular(Radii.sm),
                   ),
                   child: Row(
@@ -338,7 +340,7 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
                         ),
                       ),
                       const SizedBox(width: 4),
-                      const Icon(Icons.keyboard_arrow_down, size: 16, color: Colors.white60),
+                      Icon(Icons.keyboard_arrow_down, size: 16, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.60)),
                     ],
                   ),
                 ),
@@ -378,7 +380,7 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('AMOUNT', style: theme.textTheme.labelSmall?.copyWith(letterSpacing: 2, color: Colors.white38)),
+                Text('AMOUNT', style: theme.textTheme.labelSmall?.copyWith(letterSpacing: 2, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.38))),
                 const SizedBox(height: Spacing.xs),
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.baseline,
@@ -400,7 +402,7 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
                           focusedBorder: InputBorder.none,
                           fillColor: Colors.transparent,
                           hintText: '0',
-                          hintStyle: theme.textTheme.displayMedium?.copyWith(color: Colors.white24),
+                          hintStyle: theme.textTheme.displayMedium?.copyWith(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.24)),
                           contentPadding: EdgeInsets.zero,
                           isDense: true,
                         ),
@@ -420,29 +422,42 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
                 // First Card: Category, Account, Date
                 Container(
                   decoration: BoxDecoration(
-                    border: Border.all(color: Colors.white12),
+                    border: Border.all(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.12)),
                     borderRadius: BorderRadius.circular(Radii.md),
                   ),
                   child: Column(
                     children: [
+                      if (_selectedType != TransactionType.transfer) ...[
+                        _buildSelectorTile(
+                          title: 'Category',
+                          value: _selectedCategoryId != null 
+                              ? ref.watch(watchCategoriesProvider).value?.where((c) => c.id == _selectedCategoryId).firstOrNull?.name ?? 'Select Category'
+                              : 'Select Category',
+                          icon: Icons.category_outlined,
+                          onTap: _showCategoryPicker,
+                        ),
+                        Divider(height: 1, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.12)),
+                      ],
                       _buildSelectorTile(
-                        title: 'Category',
-                        value: _selectedCategoryId != null 
-                            ? ref.watch(watchCategoriesProvider).value?.where((c) => c.id == _selectedCategoryId).firstOrNull?.name ?? 'Select Category'
-                            : 'Select Category',
-                        icon: Icons.category_outlined,
-                        onTap: _showCategoryPicker,
-                      ),
-                      const Divider(height: 1, color: Colors.white12),
-                      _buildSelectorTile(
-                        title: 'Account',
+                        title: _selectedType == TransactionType.transfer ? 'From Account' : 'Account',
                         value: _selectedAccountId != null 
                             ? ref.watch(watchAccountsProvider).value?.where((a) => a.id == _selectedAccountId).firstOrNull?.name ?? 'Select Account'
                             : 'Select Account',
                         icon: Icons.account_balance_wallet_outlined,
-                        onTap: _showAccountPicker,
+                        onTap: () => _showAccountPicker(isDestination: false),
                       ),
-                      const Divider(height: 1, color: Colors.white12),
+                      if (_selectedType == TransactionType.transfer) ...[
+                        Divider(height: 1, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.12)),
+                        _buildSelectorTile(
+                          title: 'To Account',
+                          value: _selectedToAccountId != null 
+                              ? ref.watch(watchAccountsProvider).value?.where((a) => a.id == _selectedToAccountId).firstOrNull?.name ?? 'Select Account'
+                              : 'Select Account',
+                          icon: Icons.account_balance_wallet,
+                          onTap: () => _showAccountPicker(isDestination: true),
+                        ),
+                      ],
+                      Divider(height: 1, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.12)),
                       _buildSelectorTile(
                         title: 'Date',
                         value: DateFormat.yMMMd().format(_selectedDate),
@@ -460,7 +475,7 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
                 // Second Card: Notes
                 Container(
                   decoration: BoxDecoration(
-                    border: Border.all(color: Colors.white12),
+                    border: Border.all(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.12)),
                     borderRadius: BorderRadius.circular(Radii.md),
                   ),
                   child: Column(
@@ -478,7 +493,7 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
                           padding: const EdgeInsets.symmetric(horizontal: Spacing.md, vertical: 12),
                           child: Row(
                             children: [
-                              const Icon(Icons.notes, color: Colors.white60),
+                              Icon(Icons.notes, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.60)),
                               const SizedBox(width: Spacing.md),
                               Expanded(
                                 child: Text('Add Notes', style: Theme.of(context).textTheme.titleMedium),
@@ -488,7 +503,7 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
                                 child: CupertinoSwitch(
                                   value: _isNotesEnabled,
                                   activeTrackColor: activeColor,
-                                  inactiveTrackColor: Colors.white12,
+                                  inactiveTrackColor: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.12),
                                   onChanged: (val) {
                                     HapticFeedback.selectionClick();
                                     setState(() {
@@ -503,7 +518,7 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
                         ),
                       ),
                       if (_isNotesEnabled) ...[
-                        const Divider(height: 1, color: Colors.white12),
+                        Divider(height: 1, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.12)),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: Spacing.md, vertical: Spacing.sm),
                           child: TextField(
@@ -537,7 +552,7 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
             onPressed: _save,
             style: FilledButton.styleFrom(
               backgroundColor: activeColor,
-              foregroundColor: _selectedType == TransactionType.income ? Colors.black : Colors.white,
+              foregroundColor: _selectedType == TransactionType.income ? Colors.black : Theme.of(context).colorScheme.onSurface,
               minimumSize: const Size.fromHeight(48),
               padding: const EdgeInsets.symmetric(vertical: Spacing.sm),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Radii.md)),
@@ -565,19 +580,19 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
         padding: const EdgeInsets.all(Spacing.md),
         child: Row(
           children: [
-            Icon(icon, color: Colors.white60),
+            Icon(icon, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.60)),
             const SizedBox(width: Spacing.md),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Colors.white38)),
+                  Text(title, style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.38))),
                   const SizedBox(height: 2),
                   Text(value, style: Theme.of(context).textTheme.titleMedium),
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right, color: Colors.white38),
+            Icon(Icons.chevron_right, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.38)),
           ],
         ),
       ),

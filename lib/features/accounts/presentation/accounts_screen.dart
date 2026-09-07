@@ -39,12 +39,12 @@ class AccountsScreen extends ConsumerWidget {
                     children: [
                       Text(
                         'PORTFOLIO',
-                        style: theme.textTheme.labelSmall?.copyWith(letterSpacing: 1.5, color: Colors.white38),
+                        style: theme.textTheme.labelSmall?.copyWith(letterSpacing: 1.5, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.38)),
                       ),
                       const SizedBox(height: Spacing.xs),
                       Text(
                         CurrencyFormatter.format(totalBalance),
-                        style: theme.textTheme.displaySmall?.copyWith(fontWeight: FontWeight.bold, color: Colors.white),
+                        style: theme.textTheme.displaySmall?.copyWith(fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface),
                       ),
                     ],
                   ),
@@ -52,10 +52,10 @@ class AccountsScreen extends ConsumerWidget {
               ),
 
               // Divider
-              const SliverToBoxAdapter(
+              SliverToBoxAdapter(
                 child: Padding(
-                  padding: EdgeInsets.symmetric(vertical: Spacing.md),
-                  child: Divider(height: 1, thickness: 0.5, color: Colors.white10),
+                  padding: const EdgeInsets.symmetric(vertical: Spacing.md),
+                  child: Divider(height: 1, thickness: 0.5, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.10)),
                 ),
               ),
 
@@ -120,7 +120,7 @@ class AccountsScreen extends ConsumerWidget {
     final theme = Theme.of(context);
     
     IconData icon = Icons.account_balance_wallet_outlined;
-    Color typeColor = Colors.white;
+    Color typeColor = Theme.of(context).colorScheme.onSurface;
     
     switch (account.type) {
       case AccountType.cash:
@@ -129,7 +129,7 @@ class AccountsScreen extends ConsumerWidget {
         break;
       case AccountType.bank:
         icon = Icons.account_balance_outlined;
-        typeColor = Colors.white; 
+        typeColor = Theme.of(context).colorScheme.onSurface; 
         break;
       case AccountType.eWallet:
         icon = Icons.account_balance_wallet_outlined;
@@ -152,9 +152,9 @@ class AccountsScreen extends ConsumerWidget {
       child: Container(
         padding: const EdgeInsets.all(Spacing.lg),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.03),
+          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.03),
           borderRadius: BorderRadius.circular(Radii.lg),
-          border: Border.all(color: Colors.white12),
+          border: Border.all(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.12)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -182,16 +182,16 @@ class AccountsScreen extends ConsumerWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.05),
+                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.05),
                     borderRadius: BorderRadius.circular(100),
-                    border: Border.all(color: Colors.white10),
+                    border: Border.all(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.10)),
                   ),
                   child: Text(
                     account.type.name.toUpperCase(),
                     style: theme.textTheme.labelSmall?.copyWith(
                       fontSize: 10,
                       letterSpacing: 1,
-                      color: Colors.white60,
+                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.60),
                     ),
                   ),
                 ),
@@ -200,12 +200,12 @@ class AccountsScreen extends ConsumerWidget {
             const SizedBox(height: Spacing.xl),
             Text(
               'BALANCE',
-              style: theme.textTheme.labelSmall?.copyWith(letterSpacing: 1.5, color: Colors.white38),
+              style: theme.textTheme.labelSmall?.copyWith(letterSpacing: 1.5, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.38)),
             ),
             const SizedBox(height: 4),
             Text(
               CurrencyFormatter.format(account.currentBalance),
-              style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold, color: Colors.white),
+              style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface),
             ),
           ],
         ),

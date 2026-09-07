@@ -42,10 +42,10 @@ class AccountsDataSource {
     final query = _db.customSelect(
       '''
       SELECT a.id, a.name, a.type, a.starting_balance,
-             a.starting_balance + COALESCE(SUM(CASE WHEN t.type = 0 THEN t.amount ELSE -t.amount END), 0) AS current_balance
+             a.starting_balance 
+             + COALESCE((SELECT SUM(CASE WHEN type = 0 THEN amount WHEN type = 2 THEN -amount ELSE -amount END) FROM transactions WHERE account_id = a.id), 0)
+             + COALESCE((SELECT SUM(amount) FROM transactions WHERE type = 2 AND to_account_id = a.id), 0) AS current_balance
       FROM accounts a
-      LEFT JOIN transactions t ON t.account_id = a.id
-      GROUP BY a.id
       ''',
       readsFrom: {
         _db.accounts,

@@ -1,2 +1,2 @@
-enum TransactionType { income, expense }
+enum TransactionType { income, expense, transfer }
 enum AccountType { cash, bank, eWallet, rdn }

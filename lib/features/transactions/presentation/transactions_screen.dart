@@ -9,6 +9,8 @@ import 'dart:io';
 
 import '../../../core/domain/enums.dart';
 import '../../../core/theme/design_tokens.dart';
+import '../../../core/presentation/widgets/premium_empty_state.dart';
+
 import '../../../core/utils/currency_formatter.dart';
 import '../../../core/utils/icon_map.dart';
 import '../../accounts/domain/account_entity.dart';
@@ -62,7 +64,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> with Ti
                     width: 40,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: Colors.white24,
+                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.24),
                       borderRadius: BorderRadius.circular(Radii.sm),
                     ),
                   ),
@@ -95,7 +97,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> with Ti
           break;
         case AccountType.bank:
           icon = Icons.account_balance_outlined;
-          color = Colors.white;
+          color = Theme.of(context).colorScheme.onSurface;
           break;
         case AccountType.eWallet:
           icon = Icons.account_balance_wallet_outlined;
@@ -122,7 +124,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> with Ti
         child: Container(
           padding: const EdgeInsets.all(Spacing.md),
           decoration: BoxDecoration(
-            border: Border.all(color: isSelected ? color : Colors.white12),
+            border: Border.all(color: isSelected ? color : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.12)),
             borderRadius: BorderRadius.circular(Radii.md),
             color: isSelected ? color.withValues(alpha: 0.1) : Colors.transparent,
           ),
@@ -258,20 +260,20 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> with Ti
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                           decoration: BoxDecoration(
-                            color: Colors.white10,
+                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.10),
                             borderRadius: BorderRadius.circular(100),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(Icons.work_outline, size: 14, color: Colors.white60),
+                              Icon(Icons.work_outline, size: 14, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.60)),
                               const SizedBox(width: 6),
                               Text(
                                 _selectedAccountId == null ? 'ALL' : accountName.toUpperCase(),
-                                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white),
+                                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface),
                               ),
                               const SizedBox(width: 4),
-                              const Icon(Icons.keyboard_arrow_down, size: 16, color: Colors.white60),
+                              Icon(Icons.keyboard_arrow_down, size: 16, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.60)),
                             ],
                           ),
                         ),
@@ -292,7 +294,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> with Ti
                       const SizedBox(height: Spacing.md),
                       Text(
                         CurrencyFormatter.format(totalBalance),
-                        style: theme.textTheme.displayMedium?.copyWith(fontWeight: FontWeight.bold, color: Colors.white),
+                        style: theme.textTheme.displayMedium?.copyWith(fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface),
                       ),
                       const SizedBox(height: Spacing.xl),
                       Row(
@@ -310,7 +312,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> with Ti
               ),
 
               // Section Divider
-              const SliverToBoxAdapter(child: Divider(height: 16, color: Colors.white10, thickness: 0.5)),
+              SliverToBoxAdapter(child: Divider(height: 16, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.10), thickness: 0.5)),
 
               // Section 2: Quick Features
               SliverToBoxAdapter(
@@ -391,7 +393,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> with Ti
               ),
               
               // Section Divider
-              const SliverToBoxAdapter(child: Divider(height: 16, color: Colors.white10, thickness: 0.5)),
+              SliverToBoxAdapter(child: Divider(height: 16, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.10), thickness: 0.5)),
               
               // Section 3: Transaction Logs Header
               SliverToBoxAdapter(
@@ -406,22 +408,22 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> with Ti
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: Spacing.md, vertical: Spacing.sm),
                   child: TextField(
-                    style: const TextStyle(fontSize: 14, color: Colors.white),
+                    style: TextStyle(fontSize: 14, color: Theme.of(context).colorScheme.onSurface),
                     decoration: InputDecoration(
                       filled: false,
                       fillColor: Colors.transparent,
                       hintText: 'Search journal...',
-                      hintStyle: const TextStyle(color: Colors.white38, fontSize: 14),
-                      prefixIcon: const Padding(
-                        padding: EdgeInsets.only(right: Spacing.sm),
-                        child: Icon(Icons.search, color: Colors.white38, size: 20),
+                      hintStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.38), fontSize: 14),
+                      prefixIcon: Padding(
+                        padding: const EdgeInsets.only(right: Spacing.sm),
+                        child: Icon(Icons.search, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.38), size: 20),
                       ),
                       prefixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
-                      border: const UnderlineInputBorder(
-                        borderSide: BorderSide(color: Colors.white12),
+                      border: UnderlineInputBorder(
+                        borderSide: BorderSide(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.12)),
                       ),
-                      enabledBorder: const UnderlineInputBorder(
-                        borderSide: BorderSide(color: Colors.white12),
+                      enabledBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.12)),
                       ),
                       focusedBorder: UnderlineInputBorder(
                         borderSide: BorderSide(color: theme.colorScheme.primary, width: 2),
@@ -458,7 +460,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> with Ti
                         indicatorColor: theme.colorScheme.primary,
                         indicatorWeight: 2,
                         labelColor: theme.colorScheme.primary,
-                        unselectedLabelColor: Colors.white60,
+                        unselectedLabelColor: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.60),
                         labelStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                         unselectedLabelStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.normal),
                         labelPadding: const EdgeInsets.symmetric(horizontal: Spacing.md),
@@ -485,11 +487,11 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> with Ti
                             icon: Container(
                               padding: const EdgeInsets.all(4),
                               decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.05),
-                                border: Border.all(color: Colors.white12),
+                                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.05),
+                                border: Border.all(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.12)),
                                 shape: BoxShape.circle,
                               ),
-                              child: const Icon(Icons.add, color: Colors.white60, size: 16),
+                              child: Icon(Icons.add, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.60), size: 16),
                             ),
                           ),
                         ],
@@ -515,22 +517,11 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> with Ti
                       }
                     }
 
-                    if (transactions.isEmpty) {
-                      return SizedBox(
-                        height: 200,
-                        child: Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Icon(Icons.receipt_long_outlined, size: 48, color: Colors.white24),
-                              const SizedBox(height: Spacing.md),
-                              Text(
-                                'No entries found',
-                                style: theme.textTheme.titleMedium?.copyWith(color: Colors.white60),
-                              ),
-                            ],
-                          ),
-                        ),
+                                        if (transactions.isEmpty) {
+                      return PremiumEmptyState(
+                        icon: Icons.receipt_long_outlined,
+                        title: 'No transactions yet',
+                        subtitle: 'Your journal is completely empty. Start tracking your expenses to gain insights.',
                       ).animate().fadeIn();
                     }
 
@@ -564,7 +555,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> with Ti
                                 children: [
                                   Text(
                                     DateFormat.yMMMd().format(date),
-                                    style: theme.textTheme.titleSmall?.copyWith(color: Colors.white60),
+                                    style: theme.textTheme.titleSmall?.copyWith(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.60)),
                                   ),
                                   Text(
                                     CurrencyFormatter.format(dailyTotal),
@@ -642,7 +633,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> with Ti
               child: Icon(icon, color: color, size: 28),
             ),
             const SizedBox(height: Spacing.sm),
-            Text(label, style: const TextStyle(fontSize: 12, color: Colors.white70)),
+            Text(label, style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.70))),
           ],
         ),
       ),
@@ -651,6 +642,18 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> with Ti
 
   Widget _buildTransactionItem(BuildContext context, TransactionEntity t, ThemeData theme) {
     final isIncome = t.type == TransactionType.income;
+    final isTransfer = t.type == TransactionType.transfer;
+    
+    String title = t.category?.name ?? 'Unknown';
+    Color iconColor = t.category != null ? Color(t.category!.color) : Theme.of(context).colorScheme.onSurface;
+    IconData iconData = t.category != null ? IconMap.getIcon(t.category!.icon) : Icons.receipt;
+    
+    if (isTransfer) {
+      title = 'Transfer';
+      iconColor = Colors.blueAccent;
+      iconData = Icons.swap_horiz;
+    }
+
     return InkWell(
       onTap: () {
         HapticFeedback.lightImpact();
@@ -668,12 +671,12 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> with Ti
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: t.category != null ? Color(t.category!.color).withValues(alpha: 0.15) : Colors.white10,
+                  color: iconColor.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(Radii.md),
                 ),
                 child: Icon(
-                  t.category != null ? IconMap.getIcon(t.category!.icon) : Icons.receipt,
-                  color: t.category != null ? Color(t.category!.color) : Colors.white,
+                  iconData,
+                  color: iconColor,
                 ),
               ),
             ),
@@ -683,14 +686,22 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> with Ti
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    t.category?.name ?? 'Unknown',
+                    title,
                     style: theme.textTheme.titleMedium,
                   ),
-                  if (t.note != null && t.note!.isNotEmpty) ...[
+                  if (isTransfer) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      '${t.account?.name ?? 'Unknown'} -> ${t.toAccount?.name ?? 'Unknown'}',
+                      style: theme.textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.60)),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ] else if (t.note != null && t.note!.isNotEmpty) ...[
                     const SizedBox(height: 2),
                     Text(
                       t.note!,
-                      style: theme.textTheme.bodyMedium?.copyWith(color: Colors.white60),
+                      style: theme.textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.60)),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -700,9 +711,9 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> with Ti
             ),
             const SizedBox(width: Spacing.md),
             Text(
-              '${isIncome ? '+' : '-'}${CurrencyFormatter.format(t.amount)}',
+              '${isIncome ? '+' : isTransfer ? '' : '-'}${CurrencyFormatter.format(t.amount)}',
               style: theme.textTheme.titleMedium?.copyWith(
-                color: isIncome ? theme.colorScheme.primary : Colors.white,
+                color: isIncome ? theme.colorScheme.primary : isTransfer ? Colors.blueAccent : Theme.of(context).colorScheme.onSurface,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -718,7 +729,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> with Ti
       children: [
         Text(
           title.toUpperCase(),
-          style: theme.textTheme.labelSmall?.copyWith(letterSpacing: 1.5, color: Colors.white38),
+          style: theme.textTheme.labelSmall?.copyWith(letterSpacing: 1.5, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.38)),
         ),
       ],
     );
@@ -728,7 +739,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> with Ti
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: theme.textTheme.labelSmall?.copyWith(color: Colors.white60), maxLines: 1, overflow: TextOverflow.ellipsis),
+        Text(label, style: theme.textTheme.labelSmall?.copyWith(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.60)), maxLines: 1, overflow: TextOverflow.ellipsis),
         const SizedBox(height: 4),
         FittedBox(
           fit: BoxFit.scaleDown,
@@ -744,8 +755,8 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> with Ti
 
   Widget _buildSkeletonLoader() {
     return Shimmer.fromColors(
-      baseColor: Colors.white10,
-      highlightColor: Colors.white24,
+      baseColor: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.10),
+      highlightColor: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.24),
       child: ListView.builder(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
@@ -759,7 +770,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> with Ti
                   width: 48,
                   height: 48,
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.onSurface,
                     borderRadius: BorderRadius.circular(Radii.md),
                   ),
                 ),
@@ -768,13 +779,13 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> with Ti
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Container(width: 120, height: 16, color: Colors.white),
+                      Container(width: 120, height: 16, color: Theme.of(context).colorScheme.onSurface),
                       const SizedBox(height: 8),
-                      Container(width: 80, height: 12, color: Colors.white),
+                      Container(width: 80, height: 12, color: Theme.of(context).colorScheme.onSurface),
                     ],
                   ),
                 ),
-                Container(width: 60, height: 16, color: Colors.white),
+                Container(width: 60, height: 16, color: Theme.of(context).colorScheme.onSurface),
               ],
             ),
           );

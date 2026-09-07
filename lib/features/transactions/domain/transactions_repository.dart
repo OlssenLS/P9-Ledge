@@ -7,8 +7,9 @@ abstract class TransactionsRepository {
   Future<int> addTransaction({
     required double amount,
     required TransactionType type,
-    required int categoryId,
+    int? categoryId,
     required int accountId,
+    int? toAccountId,
     String? note,
     required DateTime date,
   });
@@ -16,8 +17,9 @@ abstract class TransactionsRepository {
     required int id,
     required double amount,
     required TransactionType type,
-    required int categoryId,
+    int? categoryId,
     required int accountId,
+    int? toAccountId,
     String? note,
     required DateTime date,
   });

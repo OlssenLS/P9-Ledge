@@ -54,7 +54,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     width: 40,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: Colors.white24,
+                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.24),
                       borderRadius: BorderRadius.circular(Radii.sm),
                     ),
                   ),
@@ -109,7 +109,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       child: Container(
         padding: const EdgeInsets.all(Spacing.md),
         decoration: BoxDecoration(
-          border: Border.all(color: Colors.white12),
+          border: Border.all(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.12)),
           borderRadius: BorderRadius.circular(Radii.md),
         ),
         child: Row(
@@ -131,12 +131,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   const SizedBox(height: 2),
                   Text(
                     subtitle,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.white60),
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.60)),
                   ),
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right, color: Colors.white38),
+            Icon(Icons.chevron_right, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.38)),
           ],
         ),
       ),
@@ -225,7 +225,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           color: Theme.of(context).bottomNavigationBarTheme.backgroundColor,
           border: Border(
             top: BorderSide(
-              color: Theme.of(context).brightness == Brightness.dark ? Colors.white10 : Colors.black12,
+              color: Theme.of(context).brightness == Brightness.dark ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.10) : Colors.black12,
               width: 1.0,
             ),
           ),
