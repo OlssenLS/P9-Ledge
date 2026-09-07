@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -31,14 +30,17 @@ class TransactionFormScreen extends ConsumerStatefulWidget {
 }
 
 class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
+  final _formKey = GlobalKey<FormState>();
+  final _amountFocus = FocusNode();
+  
   late TextEditingController _amountController;
   late TextEditingController _noteController;
+  
   late TransactionType _selectedType;
   int? _selectedCategoryId;
   int? _selectedAccountId;
   int? _selectedToAccountId;
   late DateTime _selectedDate;
-  bool _isNotesEnabled = false;
 
   @override
   void initState() {
@@ -50,7 +52,7 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
     _noteController = TextEditingController(
       text: widget.transaction?.note ?? widget.initialNote ?? '',
     );
-    _isNotesEnabled = _noteController.text.isNotEmpty;
+    
     _selectedType = widget.transaction?.type ?? TransactionType.expense;
     _selectedCategoryId = widget.transaction?.categoryId;
     _selectedAccountId = widget.transaction?.accountId;
@@ -62,88 +64,64 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
   void dispose() {
     _amountController.dispose();
     _noteController.dispose();
+    _amountFocus.dispose();
     super.dispose();
   }
 
   void _save() async {
-    HapticFeedback.mediumImpact();
+    if (_formKey.currentState!.validate()) {
+      final amtText = _amountController.text.replaceAll(',', '');
+      final amount = double.tryParse(amtText) ?? 0;
+      
+      if (_selectedType != TransactionType.transfer && _selectedCategoryId == null) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please select a category')));
+        return;
+      }
+      if (_selectedAccountId == null) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please select an account')));
+        return;
+      }
+      if (_selectedType == TransactionType.transfer && _selectedToAccountId == null) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please select a destination account')));
+        return;
+      }
+      if (_selectedType == TransactionType.transfer && _selectedAccountId == _selectedToAccountId) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Destination account cannot be the same')));
+        return;
+      }
 
-    if (_selectedCategoryId == null || _selectedAccountId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Please select a category and account.'),
-          backgroundColor: Theme.of(context).colorScheme.error,
-        ),
-      );
-      return;
+      final repo = ref.read(transactionsRepositoryProvider);
+      
+      if (widget.transaction == null) {
+        await repo.addTransaction(
+          amount: amount,
+          type: _selectedType,
+          categoryId: _selectedCategoryId,
+          accountId: _selectedAccountId!,
+          toAccountId: _selectedToAccountId,
+          note: _noteController.text.isEmpty ? null : _noteController.text,
+          date: _selectedDate,
+        );
+      } else {
+        await repo.updateTransaction(
+          id: widget.transaction!.id,
+          amount: amount,
+          type: _selectedType,
+          categoryId: _selectedCategoryId,
+          accountId: _selectedAccountId!,
+          toAccountId: _selectedToAccountId,
+          note: _noteController.text.isEmpty ? null : _noteController.text,
+          date: _selectedDate,
+        );
+      }
+      if (mounted) Navigator.pop(context);
     }
-
-    final amountText = _amountController.text.replaceAll(RegExp(r'[^0-9]'), '');
-    final amount = double.tryParse(amountText) ?? 0.0;
-    if (amount <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Please enter a valid amount.'),
-          backgroundColor: Theme.of(context).colorScheme.error,
-        ),
-      );
-      return;
-    }
-
-    final repo = ref.read(transactionsRepositoryProvider);
-
-    if (widget.transaction == null) {
-      await repo.addTransaction(
-        amount: amount,
-        type: _selectedType,
-        categoryId: _selectedCategoryId!,
-        accountId: _selectedAccountId!,
-        note: _noteController.text,
-        date: _selectedDate,
-      );
-    } else {
-      await repo.updateTransaction(
-        id: widget.transaction!.id,
-        amount: amount,
-        type: _selectedType,
-        categoryId: _selectedCategoryId!,
-        accountId: _selectedAccountId!,
-        note: _noteController.text,
-        date: _selectedDate,
-      );
-    }
-    if (mounted) Navigator.pop(context);
   }
 
   void _delete() async {
-    HapticFeedback.heavyImpact();
     final repo = ref.read(transactionsRepositoryProvider);
     await repo.deleteTransaction(widget.transaction!.id);
     if (mounted) Navigator.pop(context);
-  }
-
-  Future<void> _pickDate() async {
-    final date = await showDatePicker(
-      context: context,
-      initialDate: _selectedDate,
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2100),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: Theme.of(context).colorScheme.copyWith(
-              primary: _selectedType == TransactionType.income
-                  ? Theme.of(context).colorScheme.primary
-                  : Theme.of(context).colorScheme.error,
-            ),
-          ),
-          child: child!,
-        );
-      },
-    );
-    if (date != null) {
-      setState(() => _selectedDate = date);
-    }
   }
 
   void _showTypePicker() {
@@ -153,41 +131,60 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) {
-        return _buildPickerSheet(
+        return _buildBottomSheetContainer(
           title: 'Transaction Type',
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                leading: Icon(Icons.arrow_upward, color: Theme.of(context).colorScheme.error),
-                title: const Text('Expense Transaction'),
-                subtitle: const Text('Money leaving your accounts (e.g., bills, food)'),
-                trailing: _selectedType == TransactionType.expense 
-                    ? Icon(Icons.radio_button_checked, color: Theme.of(context).colorScheme.error) 
-                    : Icon(Icons.radio_button_unchecked, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.38)),
-                onTap: () {
-                  HapticFeedback.lightImpact();
-                  setState(() => _selectedType = TransactionType.expense);
-                  Navigator.pop(context);
-                },
-              ),
-              ListTile(
-                leading: Icon(Icons.arrow_downward, color: Theme.of(context).colorScheme.primary),
-                title: const Text('Income Transaction'),
-                subtitle: const Text('Money entering your accounts (e.g., salary)'),
-                trailing: _selectedType == TransactionType.income 
-                    ? Icon(Icons.radio_button_checked, color: Theme.of(context).colorScheme.primary) 
-                    : Icon(Icons.radio_button_unchecked, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.38)),
-                onTap: () {
-                  HapticFeedback.lightImpact();
-                  setState(() => _selectedType = TransactionType.income);
-                  Navigator.pop(context);
-                },
-              ),
-            ],
-          ),
+          children: TransactionType.values.map((type) => _buildTypeOptionTile(type)).toList(),
         );
+      }
+    );
+  }
+  
+  Widget _buildTypeOptionTile(TransactionType type) {
+    IconData icon;
+    Color color;
+    String label = type.name.toUpperCase();
+    
+    switch (type) {
+      case TransactionType.expense:
+        icon = Icons.arrow_upward;
+        color = Theme.of(context).colorScheme.error;
+        break;
+      case TransactionType.income:
+        icon = Icons.arrow_downward;
+        color = Theme.of(context).colorScheme.primary;
+        break;
+      case TransactionType.transfer:
+        icon = Icons.swap_horiz;
+        color = Colors.blueAccent;
+        break;
+    }
+
+    return InkWell(
+      onTap: () {
+        HapticFeedback.selectionClick();
+        setState(() => _selectedType = type);
+        Navigator.pop(context);
       },
+      borderRadius: BorderRadius.circular(Radii.md),
+      child: Container(
+        padding: const EdgeInsets.all(Spacing.md),
+        decoration: BoxDecoration(
+          border: Border.all(color: _selectedType == type ? color : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.12)),
+          borderRadius: BorderRadius.circular(Radii.md),
+          color: _selectedType == type ? color.withValues(alpha: 0.1) : Colors.transparent,
+        ),
+        margin: const EdgeInsets.only(bottom: Spacing.sm),
+        child: Row(
+          children: [
+            Icon(icon, color: color),
+            const SizedBox(width: Spacing.md),
+            Text(label, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+            const Spacer(),
+            if (_selectedType == type)
+              Icon(Icons.check_circle, color: color),
+          ],
+        ),
+      ),
     );
   }
 
@@ -199,32 +196,35 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
       backgroundColor: Colors.transparent,
       builder: (context) {
         final categoriesAsync = ref.watch(watchCategoriesProvider);
-        return _buildPickerSheet(
+        return _buildBottomSheetContainer(
           title: 'Select Category',
-          child: categoriesAsync.when(
-            data: (categories) {
-              if (categories.isEmpty) return const Center(child: Text('No categories available'));
-              return ListView.builder(
-                shrinkWrap: true,
-                itemCount: categories.length,
-                itemBuilder: (context, index) {
-                  final c = categories[index];
-                  return ListTile(
-                    leading: Icon(IconMap.getIcon(c.icon), color: Color(c.color)),
-                    title: Text(c.name),
-                    trailing: _selectedCategoryId == c.id ? const Icon(Icons.check) : null,
-                    onTap: () {
-                      HapticFeedback.lightImpact();
-                      setState(() => _selectedCategoryId = c.id);
-                      Navigator.pop(context);
-                    },
-                  );
-                },
-              );
-            },
-            loading: () => const Center(child: CircularProgressIndicator()),
-            error: (e, s) => Center(child: Text('Error: $e')),
-          ),
+          children: [
+            categoriesAsync.when(
+              data: (categories) {
+                if (categories.isEmpty) return const Center(child: Text('No categories available'));
+                return ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: categories.length,
+                  itemBuilder: (context, index) {
+                    final c = categories[index];
+                    return ListTile(
+                      leading: Icon(IconMap.getIcon(c.icon), color: Color(c.color)),
+                      title: Text(c.name),
+                      trailing: _selectedCategoryId == c.id ? const Icon(Icons.check) : null,
+                      onTap: () {
+                        HapticFeedback.lightImpact();
+                        setState(() => _selectedCategoryId = c.id);
+                        Navigator.pop(context);
+                      },
+                    );
+                  },
+                );
+              },
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (e, s) => Center(child: Text('Error: $e')),
+            ),
+          ],
         );
       },
     );
@@ -238,61 +238,91 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
       backgroundColor: Colors.transparent,
       builder: (context) {
         final accountsAsync = ref.watch(watchAccountsProvider);
-        return _buildPickerSheet(
-          title: 'Select Account',
-          child: accountsAsync.when(
-            data: (accounts) {
-              if (accounts.isEmpty) return const Center(child: Text('No accounts available'));
-              return ListView.builder(
-                shrinkWrap: true,
-                itemCount: accounts.length,
-                itemBuilder: (context, index) {
-                  final a = accounts[index];
-                  return ListTile(
-                    leading: const Icon(Icons.account_balance_wallet),
-                    title: Text(a.name),
-                    trailing: _selectedAccountId == a.id ? const Icon(Icons.check) : null,
-                    onTap: () {
-                      HapticFeedback.lightImpact();
-                      setState(() => _selectedAccountId = a.id);
-                      Navigator.pop(context);
-                    },
-                  );
-                },
-              );
-            },
-            loading: () => const Center(child: CircularProgressIndicator()),
-            error: (e, s) => Center(child: Text('Error: $e')),
-          ),
+        return _buildBottomSheetContainer(
+          title: isDestination ? 'To Account' : 'From Account',
+          children: [
+            accountsAsync.when(
+              data: (accounts) {
+                if (accounts.isEmpty) return const Center(child: Text('No accounts available'));
+                return ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: accounts.length,
+                  itemBuilder: (context, index) {
+                    final a = accounts[index];
+                    final isSelected = isDestination ? _selectedToAccountId == a.id : _selectedAccountId == a.id;
+                    return ListTile(
+                      leading: const Icon(Icons.account_balance_wallet_outlined),
+                      title: Text(a.name),
+                      subtitle: Text(a.type.name.toUpperCase(), style: const TextStyle(fontSize: 12)),
+                      trailing: isSelected ? const Icon(Icons.check) : null,
+                      onTap: () {
+                        HapticFeedback.lightImpact();
+                        setState(() {
+                          if (isDestination) {
+                            _selectedToAccountId = a.id;
+                          } else {
+                            _selectedAccountId = a.id;
+                          }
+                        });
+                        Navigator.pop(context);
+                      },
+                    );
+                  },
+                );
+              },
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (e, s) => Center(child: Text('Error: $e')),
+            ),
+          ],
         );
       },
     );
   }
 
-  Widget _buildPickerSheet({required String title, required Widget child}) {
+  Future<void> _pickDate() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2100),
+    );
+    if (picked != null) {
+      setState(() {
+        _selectedDate = DateTime(picked.year, picked.month, picked.day, _selectedDate.hour, _selectedDate.minute);
+      });
+    }
+  }
+
+  Widget _buildBottomSheetContainer({required String title, required List<Widget> children}) {
     return Container(
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(Radii.lg)),
       ),
-      constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.6),
+      padding: Insets.bottomSheet,
       child: SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: Spacing.md),
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.24),
-                borderRadius: BorderRadius.circular(Radii.sm),
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.24),
+                  borderRadius: BorderRadius.circular(Radii.sm),
+                ),
               ),
             ),
+            const SizedBox(height: Spacing.xl),
+            Text(
+              title,
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
             const SizedBox(height: Spacing.lg),
-            Text(title, style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: Spacing.md),
-            Flexible(child: child),
+            ...children,
           ],
         ),
       ),
@@ -302,298 +332,297 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final activeColor = _selectedType == TransactionType.income ? theme.colorScheme.primary : theme.colorScheme.error;
+    final isEditing = widget.transaction != null;
+    final isDark = theme.brightness == Brightness.dark;
+    
+    Color activeColor;
+    switch (_selectedType) {
+      case TransactionType.expense:
+        activeColor = theme.colorScheme.onSurface;
+        break;
+      case TransactionType.income:
+        activeColor = theme.colorScheme.primary;
+        break;
+      case TransactionType.transfer:
+        activeColor = Colors.blueAccent;
+        break;
+    }
 
     return Scaffold(
       appBar: AppBar(
-        centerTitle: false,
+        centerTitle: true,
+        title: Text(isEditing ? 'EDIT TRANSACTION' : 'NEW TRANSACTION', style: theme.textTheme.labelSmall?.copyWith(letterSpacing: 1.5, color: isDark ? Colors.white38 : Colors.black38)),
         leading: IconButton(
-          icon: const Icon(Icons.chevron_left, size: 32),
+          icon: const Icon(Icons.close),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Text(
-          widget.transaction == null ? 'New Transaction' : 'Edit Transaction',
-          style: const TextStyle(fontSize: 16),
-        ),
-        actions: [
-          Center(
-            child: Padding(
-              padding: const EdgeInsets.only(right: Spacing.md),
-              child: InkWell(
-                onTap: _showTypePicker,
-                borderRadius: BorderRadius.circular(Radii.sm),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.10),
-                    borderRadius: BorderRadius.circular(Radii.sm),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        _selectedType == TransactionType.expense ? 'Expense' : 'Income',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: activeColor,
-                        ),
-                      ),
-                      const SizedBox(width: 4),
-                      Icon(Icons.keyboard_arrow_down, size: 16, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.60)),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-          if (widget.transaction != null)
-            IconButton(
-              icon: Icon(Icons.delete_outline, color: theme.colorScheme.error),
-              onPressed: () async {
-                HapticFeedback.lightImpact();
-                final confirm = await showDialog<bool>(
-                  context: context,
-                  builder: (ctx) => AlertDialog(
-                    title: const Text('Delete Transaction?'),
-                    content: const Text('Are you sure you want to delete this transaction?'),
-                    actions: [
-                      TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
-                      TextButton(
-                        onPressed: () => Navigator.pop(ctx, true), 
-                        child: Text('Delete', style: TextStyle(color: theme.colorScheme.error)),
-                      ),
-                    ],
-                  ),
-                );
-                if (confirm == true) _delete();
-              },
-            ),
-        ],
       ),
-      body: Column(
-        children: [
-
-          // Massive Amount Input
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: Spacing.xl, horizontal: Spacing.xl),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('AMOUNT', style: theme.textTheme.labelSmall?.copyWith(letterSpacing: 2, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.38))),
-                const SizedBox(height: Spacing.xs),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.baseline,
-                  textBaseline: TextBaseline.alphabetic,
-                  children: [
-                    Text('IDR ', style: theme.textTheme.headlineMedium?.copyWith(color: activeColor.withValues(alpha: 0.6))),
-                    Expanded(
-                      child: TextField(
-                        controller: _amountController,
-                        keyboardType: TextInputType.number,
-                        textAlign: TextAlign.left,
-                        style: theme.textTheme.displayMedium?.copyWith(
-                          fontWeight: FontWeight.w700,
-                          color: activeColor,
-                        ),
-                        decoration: InputDecoration(
-                          border: InputBorder.none,
-                          enabledBorder: InputBorder.none,
-                          focusedBorder: InputBorder.none,
-                          fillColor: Colors.transparent,
-                          hintText: '0',
-                          hintStyle: theme.textTheme.displayMedium?.copyWith(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.24)),
-                          contentPadding: EdgeInsets.zero,
-                          isDense: true,
-                        ),
-                        onChanged: (val) {},
-                      ),
+      body: Form(
+        key: _formKey,
+        child: CustomScrollView(
+          slivers: [
+            SliverPadding(
+              padding: const EdgeInsets.all(Spacing.md),
+              sliver: SliverList(
+                delegate: SliverChildListDelegate([
+                  // Amount Input Card
+                  Container(
+                    padding: const EdgeInsets.all(Spacing.xl),
+                    decoration: BoxDecoration(
+                      color: isDark ? Colors.white.withValues(alpha: 0.03) : Colors.black.withValues(alpha: 0.03),
+                      borderRadius: BorderRadius.circular(Radii.lg),
+                      border: Border.all(color: isDark ? Colors.white12 : Colors.black12),
                     ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.symmetric(horizontal: Spacing.md),
-              children: [
-                // First Card: Category, Account, Date
-                Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.12)),
-                    borderRadius: BorderRadius.circular(Radii.md),
-                  ),
-                  child: Column(
-                    children: [
-                      if (_selectedType != TransactionType.transfer) ...[
-                        _buildSelectorTile(
-                          title: 'Category',
-                          value: _selectedCategoryId != null 
-                              ? ref.watch(watchCategoriesProvider).value?.where((c) => c.id == _selectedCategoryId).firstOrNull?.name ?? 'Select Category'
-                              : 'Select Category',
-                          icon: Icons.category_outlined,
-                          onTap: _showCategoryPicker,
-                        ),
-                        Divider(height: 1, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.12)),
-                      ],
-                      _buildSelectorTile(
-                        title: _selectedType == TransactionType.transfer ? 'From Account' : 'Account',
-                        value: _selectedAccountId != null 
-                            ? ref.watch(watchAccountsProvider).value?.where((a) => a.id == _selectedAccountId).firstOrNull?.name ?? 'Select Account'
-                            : 'Select Account',
-                        icon: Icons.account_balance_wallet_outlined,
-                        onTap: () => _showAccountPicker(isDestination: false),
-                      ),
-                      if (_selectedType == TransactionType.transfer) ...[
-                        Divider(height: 1, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.12)),
-                        _buildSelectorTile(
-                          title: 'To Account',
-                          value: _selectedToAccountId != null 
-                              ? ref.watch(watchAccountsProvider).value?.where((a) => a.id == _selectedToAccountId).firstOrNull?.name ?? 'Select Account'
-                              : 'Select Account',
-                          icon: Icons.account_balance_wallet,
-                          onTap: () => _showAccountPicker(isDestination: true),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('AMOUNT', style: theme.textTheme.labelSmall?.copyWith(letterSpacing: 1.5, color: theme.colorScheme.onSurface.withValues(alpha: 0.38))),
+                        const SizedBox(height: Spacing.sm),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Text(
+                              'IDR',
+                              style: theme.textTheme.titleMedium?.copyWith(color: activeColor.withValues(alpha: 0.60), fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(width: Spacing.sm),
+                            Expanded(
+                              child: TextFormField(
+                                controller: _amountController,
+                                focusNode: _amountFocus,
+                                keyboardType: TextInputType.number,
+                                style: theme.textTheme.displaySmall?.copyWith(fontWeight: FontWeight.bold, color: activeColor),
+                                decoration: InputDecoration(
+                                  hintText: '0',
+                                  hintStyle: theme.textTheme.displaySmall?.copyWith(color: theme.colorScheme.onSurface.withValues(alpha: 0.24)),
+                                  border: InputBorder.none,
+                                  enabledBorder: InputBorder.none,
+                                  focusedBorder: InputBorder.none,
+                                  filled: false,
+                                  contentPadding: EdgeInsets.zero,
+                                  isDense: true,
+                                ),
+                                validator: (v) => v == null || v.isEmpty || double.tryParse(v) == null ? 'Invalid amount' : null,
+                              ),
+                            ),
+                          ],
                         ),
                       ],
-                      Divider(height: 1, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.12)),
-                      _buildSelectorTile(
-                        title: 'Date',
-                        value: DateFormat.yMMMd().format(_selectedDate),
-                        icon: Icons.calendar_today_outlined,
-                        onTap: () {
-                          HapticFeedback.selectionClick();
-                          _pickDate();
-                        },
-                      ),
-                    ],
+                    ),
                   ),
-                ),
-                const SizedBox(height: Spacing.lg),
-                
-                // Second Card: Notes
-                Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.12)),
-                    borderRadius: BorderRadius.circular(Radii.md),
-                  ),
-                  child: Column(
-                    children: [
-                      InkWell(
-                        onTap: () {
-                          HapticFeedback.selectionClick();
-                          setState(() {
-                            _isNotesEnabled = !_isNotesEnabled;
-                            if (!_isNotesEnabled) _noteController.clear();
-                          });
-                        },
-                        borderRadius: BorderRadius.circular(Radii.md),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: Spacing.md, vertical: 12),
+                  const SizedBox(height: Spacing.md),
+
+                  // Details Card
+                  Container(
+                    decoration: BoxDecoration(
+                      color: isDark ? Colors.white.withValues(alpha: 0.03) : Colors.black.withValues(alpha: 0.03),
+                      borderRadius: BorderRadius.circular(Radii.lg),
+                      border: Border.all(color: isDark ? Colors.white12 : Colors.black12),
+                    ),
+                    child: Column(
+                      children: [
+                        // Type Selector
+                        InkWell(
+                          onTap: _showTypePicker,
+                          borderRadius: const BorderRadius.vertical(top: Radius.circular(Radii.lg)),
+                          child: Padding(
+                            padding: const EdgeInsets.all(Spacing.lg),
+                            child: Row(
+                              children: [
+                                Icon(Icons.swap_vert, color: theme.colorScheme.onSurface.withValues(alpha: 0.60), size: 20),
+                                const SizedBox(width: Spacing.md),
+                                Text('Type', style: theme.textTheme.titleMedium),
+                                const Spacer(),
+                                Text(_selectedType.name.toUpperCase(), style: theme.textTheme.titleMedium?.copyWith(color: activeColor)),
+                                const SizedBox(width: Spacing.xs),
+                                Icon(Icons.chevron_right, color: theme.colorScheme.onSurface.withValues(alpha: 0.38)),
+                              ],
+                            ),
+                          ),
+                        ),
+                        Divider(height: 1, color: isDark ? Colors.white10 : Colors.black12),
+                        
+                        // Category (Hidden for transfers)
+                        if (_selectedType != TransactionType.transfer) ...[
+                          InkWell(
+                            onTap: _showCategoryPicker,
+                            child: Padding(
+                              padding: const EdgeInsets.all(Spacing.lg),
+                              child: Row(
+                                children: [
+                                  Icon(Icons.category_outlined, color: theme.colorScheme.onSurface.withValues(alpha: 0.60), size: 20),
+                                  const SizedBox(width: Spacing.md),
+                                  Text('Category', style: theme.textTheme.titleMedium),
+                                  const Spacer(),
+                                  Text(
+                                    _selectedCategoryId != null 
+                                      ? ref.watch(watchCategoriesProvider).value?.where((c) => c.id == _selectedCategoryId).firstOrNull?.name ?? 'Select'
+                                      : 'Select', 
+                                    style: theme.textTheme.titleMedium?.copyWith(color: _selectedCategoryId != null ? theme.colorScheme.onSurface : theme.colorScheme.onSurface.withValues(alpha: 0.38))
+                                  ),
+                                  const SizedBox(width: Spacing.xs),
+                                  Icon(Icons.chevron_right, color: theme.colorScheme.onSurface.withValues(alpha: 0.38)),
+                                ],
+                              ),
+                            ),
+                          ),
+                          Divider(height: 1, color: isDark ? Colors.white10 : Colors.black12),
+                        ],
+                        
+                        // Account
+                        InkWell(
+                          onTap: () => _showAccountPicker(isDestination: false),
+                          child: Padding(
+                            padding: const EdgeInsets.all(Spacing.lg),
+                            child: Row(
+                              children: [
+                                Icon(Icons.account_balance_wallet_outlined, color: theme.colorScheme.onSurface.withValues(alpha: 0.60), size: 20),
+                                const SizedBox(width: Spacing.md),
+                                Text(_selectedType == TransactionType.transfer ? 'From Account' : 'Account', style: theme.textTheme.titleMedium),
+                                const Spacer(),
+                                Text(
+                                  _selectedAccountId != null 
+                                    ? ref.watch(watchAccountsProvider).value?.where((a) => a.id == _selectedAccountId).firstOrNull?.name ?? 'Select'
+                                    : 'Select', 
+                                  style: theme.textTheme.titleMedium?.copyWith(color: _selectedAccountId != null ? theme.colorScheme.onSurface : theme.colorScheme.onSurface.withValues(alpha: 0.38))
+                                ),
+                                const SizedBox(width: Spacing.xs),
+                                Icon(Icons.chevron_right, color: theme.colorScheme.onSurface.withValues(alpha: 0.38)),
+                              ],
+                            ),
+                          ),
+                        ),
+                        
+                        // To Account (Only for transfers)
+                        if (_selectedType == TransactionType.transfer) ...[
+                          Divider(height: 1, color: isDark ? Colors.white10 : Colors.black12),
+                          InkWell(
+                            onTap: () => _showAccountPicker(isDestination: true),
+                            child: Padding(
+                              padding: const EdgeInsets.all(Spacing.lg),
+                              child: Row(
+                                children: [
+                                  Icon(Icons.account_balance_wallet, color: theme.colorScheme.onSurface.withValues(alpha: 0.60), size: 20),
+                                  const SizedBox(width: Spacing.md),
+                                  Text('To Account', style: theme.textTheme.titleMedium),
+                                  const Spacer(),
+                                  Text(
+                                    _selectedToAccountId != null 
+                                      ? ref.watch(watchAccountsProvider).value?.where((a) => a.id == _selectedToAccountId).firstOrNull?.name ?? 'Select'
+                                      : 'Select', 
+                                    style: theme.textTheme.titleMedium?.copyWith(color: _selectedToAccountId != null ? theme.colorScheme.onSurface : theme.colorScheme.onSurface.withValues(alpha: 0.38))
+                                  ),
+                                  const SizedBox(width: Spacing.xs),
+                                  Icon(Icons.chevron_right, color: theme.colorScheme.onSurface.withValues(alpha: 0.38)),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                        
+                        Divider(height: 1, color: isDark ? Colors.white10 : Colors.black12),
+                        
+                        // Date
+                        InkWell(
+                          onTap: _pickDate,
+                          child: Padding(
+                            padding: const EdgeInsets.all(Spacing.lg),
+                            child: Row(
+                              children: [
+                                Icon(Icons.calendar_today_outlined, color: theme.colorScheme.onSurface.withValues(alpha: 0.60), size: 20),
+                                const SizedBox(width: Spacing.md),
+                                Text('Date', style: theme.textTheme.titleMedium),
+                                const Spacer(),
+                                Text(DateFormat.yMMMd().format(_selectedDate), style: theme.textTheme.titleMedium),
+                                const SizedBox(width: Spacing.xs),
+                                Icon(Icons.chevron_right, color: theme.colorScheme.onSurface.withValues(alpha: 0.38)),
+                              ],
+                            ),
+                          ),
+                        ),
+                        
+                        Divider(height: 1, color: isDark ? Colors.white10 : Colors.black12),
+
+                        // Notes Field
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(Spacing.lg, Spacing.sm, Spacing.lg, Spacing.xs),
                           child: Row(
                             children: [
-                              Icon(Icons.notes, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.60)),
+                              Icon(Icons.edit_note, color: theme.colorScheme.onSurface.withValues(alpha: 0.60), size: 20),
                               const SizedBox(width: Spacing.md),
                               Expanded(
-                                child: Text('Add Notes', style: Theme.of(context).textTheme.titleMedium),
-                              ),
-                              Transform.scale(
-                                scale: 0.8,
-                                child: CupertinoSwitch(
-                                  value: _isNotesEnabled,
-                                  activeTrackColor: activeColor,
-                                  inactiveTrackColor: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.12),
-                                  onChanged: (val) {
-                                    HapticFeedback.selectionClick();
-                                    setState(() {
-                                      _isNotesEnabled = val;
-                                      if (!val) _noteController.clear();
-                                    });
-                                  },
+                                child: TextFormField(
+                                  controller: _noteController,
+                                  style: theme.textTheme.titleMedium,
+                                  decoration: InputDecoration(
+                                    hintText: 'Notes (Optional)',
+                                    hintStyle: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.38)),
+                                    border: InputBorder.none,
+                                    enabledBorder: InputBorder.none,
+                                    focusedBorder: InputBorder.none,
+                                    filled: false,
+                                    contentPadding: const EdgeInsets.symmetric(vertical: Spacing.md),
+                                  ),
                                 ),
                               ),
                             ],
                           ),
                         ),
-                      ),
-                      if (_isNotesEnabled) ...[
-                        Divider(height: 1, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.12)),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: Spacing.md, vertical: Spacing.sm),
-                          child: TextField(
-                            controller: _noteController,
-                            autofocus: true,
-                            decoration: const InputDecoration(
-                              hintText: 'Enter transaction note...',
-                              border: InputBorder.none,
-                              enabledBorder: InputBorder.none,
-                              focusedBorder: InputBorder.none,
-                              fillColor: Colors.transparent,
-                            ),
-                            maxLines: 3,
-                            minLines: 1,
-                          ),
-                        ),
                       ],
-                    ],
+                    ),
                   ),
-                ),
-                const SizedBox(height: 100), // padding for bottom button
-              ],
-            ),
-          ),
-        ],
-      ),
-      bottomNavigationBar: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(Spacing.md),
-          child: FilledButton(
-            onPressed: _save,
-            style: FilledButton.styleFrom(
-              backgroundColor: activeColor,
-              foregroundColor: _selectedType == TransactionType.income ? Colors.black : Theme.of(context).colorScheme.onSurface,
-              minimumSize: const Size.fromHeight(48),
-              padding: const EdgeInsets.symmetric(vertical: Spacing.sm),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Radii.md)),
-            ),
-            child: Text(
-              widget.transaction == null ? 'Confirm Transaction' : 'Save Changes',
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSelectorTile({
-    required String title,
-    required String value,
-    required IconData icon,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(Radii.md),
-      child: Container(
-        padding: const EdgeInsets.all(Spacing.md),
-        child: Row(
-          children: [
-            Icon(icon, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.60)),
-            const SizedBox(width: Spacing.md),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title, style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.38))),
-                  const SizedBox(height: 2),
-                  Text(value, style: Theme.of(context).textTheme.titleMedium),
-                ],
+                  
+                  const SizedBox(height: Spacing.xxl),
+                  
+                  if (isEditing)
+                    TextButton.icon(
+                      onPressed: () async {
+                        HapticFeedback.lightImpact();
+                        final confirm = await showDialog<bool>(
+                          context: context,
+                          builder: (ctx) => AlertDialog(
+                            title: const Text('Delete Transaction?'),
+                            content: const Text('Are you sure you want to delete this transaction?'),
+                            actions: [
+                              TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+                              TextButton(
+                                onPressed: () => Navigator.pop(ctx, true),
+                                style: TextButton.styleFrom(foregroundColor: theme.colorScheme.error),
+                                child: const Text('Delete'),
+                              ),
+                            ],
+                          ),
+                        );
+                        if (confirm == true) {
+                          _delete();
+                        }
+                      },
+                      icon: Icon(Icons.delete_outline, color: theme.colorScheme.error),
+                      label: Text('DELETE TRANSACTION', style: TextStyle(color: theme.colorScheme.error, letterSpacing: 1.5)),
+                    ),
+                    
+                  const SizedBox(height: 100),
+                ]),
               ),
             ),
-            Icon(Icons.chevron_right, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.38)),
           ],
+        ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: Spacing.xl),
+        child: SizedBox(
+          width: double.infinity,
+          height: 56,
+          child: FloatingActionButton.extended(
+            onPressed: _save,
+            elevation: 0,
+            backgroundColor: activeColor,
+            label: Text(
+              isEditing ? 'SAVE CHANGES' : 'CONFIRM TRANSACTION', 
+              style: theme.textTheme.titleMedium?.copyWith(color: _selectedType == TransactionType.income ? Colors.black : theme.colorScheme.onPrimary, fontWeight: FontWeight.bold)
+            ),
+          ),
         ),
       ),
     );
