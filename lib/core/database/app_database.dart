@@ -38,7 +38,22 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration {
+    return MigrationStrategy(
+      onCreate: (Migrator m) async {
+        await m.createAll();
+      },
+      onUpgrade: (Migrator m, int from, int to) async {
+        if (from < 2) {
+          // Recreate the transactions table to add toAccountId and make categoryId nullable
+          await m.alterTable(TableMigration(transactions));
+        }
+      },
+    );
+  }
 }
 
 LazyDatabase _openConnection() {
